@@ -13,11 +13,12 @@ namespace webserver {
 			uv_init();
 			//THIS NEEDS TO BE CHANGED... size changes based on OS, we need some way to get that
 			//152 is what it is on my mac
-			IntPtr server = Marshal.AllocHGlobal(152);
+			int size = manos_uv_tcp_t_size();
+			IntPtr server = Marshal.AllocHGlobal(size);
 			uv_tcp_init(server);
 			manos_uv_tcp_bind(server, "0.0.0.0", 8080);
 			uv_tcp_listen(server, 128, (sock, status) => {
-				IntPtr handle = Marshal.AllocHGlobal(152);
+				IntPtr handle = Marshal.AllocHGlobal(size);
 			       	uv_tcp_init(handle);
 			       	uv_accept(sock, handle); 
 				manos_uv_read_start(handle, (socket, count, data) => {
@@ -46,6 +47,8 @@ namespace webserver {
 		public static extern void uv_accept(IntPtr socket, IntPtr stream);
 		[DllImport ("uvwrap")]
 		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_tcp_t_size();
 
 		//Stolen from http://www.elitepvpers.com/forum/co2-programming/159327-advanced-winsock-c.html
 		[StructLayout(LayoutKind.Sequential, Size=16)]

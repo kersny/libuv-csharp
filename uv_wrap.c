@@ -46,4 +46,7 @@ int manos_uv_read_start(uv_stream_t* handle, manos_uv_read_cb manos_read_cb)
 	handle->data = manos_read_cb;
 	uv_read_start(handle, alloc_cb, read_cb);
 }
-
+int manos_uv_tcp_t_size()
+{
+	return sizeof(uv_tcp_t);
+}
