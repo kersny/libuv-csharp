@@ -10,7 +10,7 @@ else
 	include config-unix.mk
 endif
 
-all: build/webserver.exe build/libuvwrap.dylib
+all: build/webserver.exe build/libuvwrap.$(STATIC_LIBRARY)
 
 build/webserver.exe: webserver.cs webserver.csproj
 	$(CSBUILD) webserver.csproj
@@ -18,10 +18,10 @@ build/webserver.exe: webserver.cs webserver.csproj
 libuv/uv.a:
 	$(UVFLAGS) $(MAKE) -C libuv
 
-build/libuvwrap.dylib: libuv/uv.a uv_wrap.c
-	$(CC) -dynamiclib uv_wrap.c -m32 -o build/libuvwrap.dylib libuv/uv.a 
-	$(CC) -shared uv_wrap.c -m32 -o build/libuvwrap.so libuv/uv.a 
+build/libuvwrap.%: libuv/uv.a uv_wrap.c
+	$(CC) $($(STATIC_LIBRARY)) uv_wrap.c -m32 -o build/libuvwrap.$(STATIC_LIBRARY) libuv/uv.a 
 
 clean:
-	$(RM) -rf build/
+	$(RM) -r build/
+	$(RM) uv_wrap.c.*
 	$(MAKE) -C libuv clean
