@@ -16,8 +16,8 @@ Currently the makefile works on OS X and Ubuntu. Windows support is in progress.
 Requirements
 ------------
 
-[Mono][2] (Tested under 2.10.2)
-gcc
+* [Mono][2] (Tested under 2.10.2)
+* gcc
 
 Build and Run
 -------------
