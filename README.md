@@ -30,3 +30,6 @@ TODO
 * Build on all platforms
 * Implement all of the api
 * Get rid of memory leaks
+
+[0]: https://www.github.com/joyent/libuv
+[1]: https://www.github.com/jacksonh/manos
