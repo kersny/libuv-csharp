@@ -1,0 +1,3 @@
+CSBUILD=xbuild
+UVFLAGS=CPPFLAGS=-m32
+
