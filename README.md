@@ -29,6 +29,11 @@ Requirements
 Build and Run
 -------------
 
+### Get it
+
+	git pull git://github.com/kersny/libuv-csharp.git
+	git submodule update --init
+
 ### *nixes
 
 	make
