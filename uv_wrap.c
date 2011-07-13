@@ -73,7 +73,3 @@ void manos_uv_tcp_t_destroy(uv_tcp_t* ptr)
 {
 	free(ptr);
 }
-int manos_uv_tcp_t_size()
-{
-	return sizeof(uv_tcp_t);
-}

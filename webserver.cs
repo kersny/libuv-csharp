@@ -44,8 +44,6 @@ namespace webserver {
 		[DllImport ("uvwrap")]
 		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb);
 		[DllImport ("uvwrap")]
-		public static extern int manos_uv_tcp_t_size();
-		[DllImport ("uvwrap")]
 		public static extern IntPtr manos_uv_tcp_t_create();
 		[DllImport ("uvwrap")]
 		public static extern void manos_uv_tcp_t_destroy(IntPtr uv_tcp_t_ptr);
