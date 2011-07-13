@@ -11,24 +11,22 @@ namespace webserver {
 		static void Main ()
 		{
 			uv_init();
-			//THIS NEEDS TO BE CHANGED... size changes based on OS, we need some way to get that
-			//152 is what it is on my mac
-			int size = manos_uv_tcp_t_size();
-			IntPtr server = Marshal.AllocHGlobal(size);
+			IntPtr server = manos_uv_tcp_t_create();
 			uv_tcp_init(server);
 			manos_uv_tcp_bind(server, "0.0.0.0", 8080);
 			uv_tcp_listen(server, 128, (sock, status) => {
-				IntPtr handle = Marshal.AllocHGlobal(size);
+				IntPtr handle = manos_uv_tcp_t_create();
 			       	uv_tcp_init(handle);
 			       	uv_accept(sock, handle); 
 				manos_uv_read_start(handle, (socket, count, data) => {
 					Console.WriteLine(BitConverter.ToString(data, 0, count));
 					Console.WriteLine(System.Text.Encoding.ASCII.GetString(data, 0, count));
+					manos_uv_write(socket, data, count);
 				});
 			});
 			Console.WriteLine ("Hello World");
 			uv_run();
-			Marshal.FreeHGlobal(server);
+			manos_uv_tcp_t_destroy(server);
 		}
 
 		[DllImport ("uvwrap")]
@@ -47,5 +45,11 @@ namespace webserver {
 		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb);
 		[DllImport ("uvwrap")]
 		public static extern int manos_uv_tcp_t_size();
+		[DllImport ("uvwrap")]
+		public static extern IntPtr manos_uv_tcp_t_create();
+		[DllImport ("uvwrap")]
+		public static extern void manos_uv_tcp_t_destroy(IntPtr uv_tcp_t_ptr);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
 	}
 }
