@@ -8,6 +8,8 @@ namespace webserver {
 		internal delegate void uv_connection_cb(IntPtr socket, int status);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		internal delegate void manos_uv_eof_cb();
 		static void Main ()
 		{
 			uv_init();
@@ -18,10 +20,13 @@ namespace webserver {
 				IntPtr handle = manos_uv_tcp_t_create();
 			       	uv_tcp_init(handle);
 			       	uv_accept(sock, handle); 
+				Console.WriteLine("Client Connected");
 				manos_uv_read_start(handle, (socket, count, data) => {
 					Console.WriteLine(BitConverter.ToString(data, 0, count));
 					Console.WriteLine(System.Text.Encoding.ASCII.GetString(data, 0, count));
 					manos_uv_write(socket, data, count);
+				}, () => {
+					Console.WriteLine("Client Left");
 				});
 			});
 			Console.WriteLine ("Hello World");
@@ -42,7 +47,7 @@ namespace webserver {
 		[DllImport ("uvwrap")]
 		public static extern void uv_accept(IntPtr socket, IntPtr stream);
 		[DllImport ("uvwrap")]
-		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb);
+		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
 		[DllImport ("uvwrap")]
 		public static extern IntPtr manos_uv_tcp_t_create();
 		[DllImport ("uvwrap")]
