@@ -16,14 +16,32 @@ Currently the makefile works on OS X and Ubuntu. Windows support is in progress.
 Requirements
 ------------
 
+# *nixes
+
 * [Mono][2] (Tested under 2.10.2)
 * gcc
+
+# Windows
+
+* MSVC 2010 (Not tested with the express edition, but it should work)
 
 Build and Run
 -------------
 
+# *nixes
+
 	make
 	mono build/webserver.exe
+	(to clean) make clean
+
+# Windows
+
+	winbuild.bat
+	cd build
+	webserver.exe
+	(to clean) winbuild.bat clean
+
+
 
 Somewhere else:
 
