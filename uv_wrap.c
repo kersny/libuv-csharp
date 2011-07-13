@@ -29,7 +29,6 @@ static uv_buf_t alloc_cb(uv_stream_t* handle, size_t suggested_size)
 static void on_close(uv_handle_t* peer) {
 	read_settings *sett = peer->data;
 	sett->done();
-	free(peer);
 }
 static void after_shutdown(uv_req_t* req, int status) {
 	uv_close(req->handle, on_close);
