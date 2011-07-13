@@ -11,30 +11,31 @@ Status
 
 It runs on my machine :)
 Right now the server is one file and simply writes what it recieves over tcp to stdout.
-Currently the makefile works on OS X and Ubuntu. Windows support is in progress.
+Currently the makefile works on OS X and Ubuntu. Windows build is using a batch file because make on Windows sucks.
 
 Requirements
 ------------
 
-# *nixes
+### *nixes
 
 * [Mono][2] (Tested under 2.10.2)
 * gcc
 
-# Windows
+### Windows
 
 * MSVC 2010 (Not tested with the express edition, but it should work)
+* MSVC# 2010
 
 Build and Run
 -------------
 
-# *nixes
+### *nixes
 
 	make
 	mono build/webserver.exe
 	(to clean) make clean
 
-# Windows
+### Windows
 
 	winbuild.bat
 	cd build
@@ -51,7 +52,7 @@ Somewhere else:
 TODO
 ----
 
-* Build on all platforms
+* Build on all platforms [DONE]
 * Implement all of the api
 * Get rid of memory leaks
 
