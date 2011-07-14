@@ -30,21 +30,20 @@ static void on_close(uv_handle_t* peer) {
 	read_settings *sett = peer->data;
 	sett->done();
 }
-static void after_shutdown(uv_req_t* req, int status) {
-	uv_close(req->handle, on_close);
+static void after_shutdown(uv_shutdown_t* req, int status) {
+	uv_close((uv_handle_t *)req->handle, on_close);
 	free(req);
 }
 static void read_cb(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 {
-	uv_req_t* req;
+	uv_shutdown_t* req;
 	if (nread < 0) {
 		/* error or eof */
 		if (buf.base) {
 			free(buf.base);
 		}
-		req = (uv_req_t*) malloc(sizeof *req);
-		uv_req_init(req, (uv_handle_t*)handle, (void *(*)(void *))after_shutdown);
-		uv_shutdown(req);
+		req = malloc(sizeof(uv_shutdown_t));
+		uv_shutdown(req, handle, after_shutdown);
 		return;
 	}
 	if (nread == 0) {
@@ -55,20 +54,18 @@ static void read_cb(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 	sett->read(handle, nread, buf.base);
 	//((manos_uv_read_cb)handle->data)(handle, nread, buf.base);
 }
-static void after_write(uv_req_t* req, int status)
+static void after_write(uv_write_t* req, int status)
 {
-	write_req_t* wr;
-	wr = (write_req_t *)req;
-	//free(wr->buf.base);
-	free(wr);
+	free(req);
 }
 int manos_uv_write(uv_tcp_t* handle, unsigned char* data, int length)
 {
-	write_req_t *wr = malloc(sizeof(write_req_t));
-	uv_req_init(&wr->req, (uv_handle_t *) handle, (void*(*)(void *))after_write);
-	wr->buf.base = data;
-	wr->buf.len = length;
-	return uv_write(&wr->req, &wr->buf, 1);
+	uv_write_t *wr = malloc(sizeof(uv_write_t));
+	uv_buf_t buf;
+	buf.base = data;
+	buf.len = length;
+	uv_buf_t a[] = { buf };
+	return uv_write(wr, (uv_stream_t *)handle, a, 1, after_write );
 }
 int manos_uv_read_start(uv_stream_t* handle, manos_uv_read_cb manos_read_cb, manos_uv_eof_cb manos_done_cb)
 {
