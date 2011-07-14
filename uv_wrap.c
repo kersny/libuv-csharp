@@ -19,6 +19,10 @@ int manos_uv_tcp_bind(uv_tcp_t *handle, const char* host, int port)
 	uv_tcp_bind(handle, uv_ip4_addr(host, port));
 }
 
+int manos_uv_tcp_connect(uv_connect_t* req, uv_tcp_t* handle, const char* host, int port, uv_connect_cb cb)
+{
+	uv_tcp_connect(req, handle, uv_ip4_addr(host, port), cb);
+}
 static uv_buf_t alloc_cb(uv_stream_t* handle, size_t suggested_size)
 {
 	uv_buf_t buf;
@@ -79,7 +83,11 @@ uv_tcp_t* manos_uv_tcp_t_create()
 {
 	return malloc(sizeof(uv_tcp_t));
 }
-void manos_uv_tcp_t_destroy(uv_tcp_t* ptr)
+uv_connect_t* manos_uv_connect_t_create()
+{
+	return malloc(sizeof(uv_connect_t));
+}
+void manos_uv_destroy(uv_tcp_t* ptr)
 {
 	free(ptr);
 }
