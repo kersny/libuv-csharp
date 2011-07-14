@@ -11,89 +11,139 @@ namespace webserver {
 		static void Main ()
 		{
 			uv_init();
-			var sock = new UVTcpSocket();
-			sock.Listen("0.0.0.0", 8080, (client) => {
+			var server = new TcpServer();
+			server.Listen("0.0.0.0", 8080, (socket) => {
 				Console.WriteLine("Client Connected");
-				client.OnData += (data, len) => {
+				socket.OnData += (data, len) => {
 					Console.WriteLine("Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
-					client.Write(data, len);
+					socket.Write(data, len);
 				};
-				client.OnClose += () => {
+				socket.OnClose += () => {
 					Console.WriteLine("Client Disconnected");
 				};
 			});
+			var client = new TcpSocket();
+			client.OnData += (data, len) => {
+				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
+			};
+			client.Connect("127.0.0.1", 8080, () => {
+				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
+				client.Write(message, message.Length);
+			});
 			uv_run();
-			//IntPtr server = manos_uv_tcp_t_create();
-			//uv_tcp_init(server);
-			//manos_uv_tcp_bind(server, "0.0.0.0", 8080);
-			//uv_tcp_listen(server, 128, (sock, status) => {
-			//	IntPtr handle = manos_uv_tcp_t_create();
-			//       	uv_tcp_init(handle);
-			//       	uv_accept(sock, handle); 
-			//	Console.WriteLine("Client Connected");
-			//	manos_uv_read_start(handle, (socket, count, data) => {
-			//		Console.WriteLine(BitConverter.ToString(data, 0, count));
-			//		Console.WriteLine(System.Text.Encoding.ASCII.GetString(data, 0, count));
-			//		manos_uv_write(socket, data, count);
-			//	}, () => {
-			//		manos_uv_tcp_t_destroy(handle);
-			//		Console.WriteLine("Client Left");
-			//	});
-			//});
-			//uv_run();
-			//manos_uv_tcp_t_destroy(server);
+			client.Dispose();
+			server.Dispose();
 		}
-
 	}
-	class UVTcpSocket {
+	abstract class TcpEntity : IDisposable {
 		public IntPtr Handle;
-		public event Action<byte[], int> OnData;
-		public event Action OnClose;
-		public UVTcpSocket()
+		public TcpEntity()
 		{
 			this.Handle = manos_uv_tcp_t_create();
 			uv_tcp_init(this.Handle);
 		}
-		public void Listen(string ip, int port, Action<UVTcpSocket> OnConnect)
+		public  void Dispose()
 		{
-			manos_uv_tcp_bind(this.Handle, ip, port);
-			uv_tcp_listen(this.Handle, 128, (sock, status) => {
-				UVTcpSocket s = new UVTcpSocket();
-				uv_accept(this.Handle, s.Handle);
-				manos_uv_read_start(s.Handle, (socket, count, data) => {
-					s.OnData(data, count);
-				}, () => {
-					manos_uv_tcp_t_destroy(s.Handle);
-					s.OnClose();
-				});
-				OnConnect(s);
-			});
-		}
-		public void Write(byte[] data, int length)
-		{
-			manos_uv_write(this.Handle, data, length);
+			manos_uv_destroy(this.Handle);
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void uv_connection_cb(IntPtr socket, int status);
+		[DllImport ("uvwrap")]
+		public static extern void uv_tcp_init (IntPtr socket);
+		[DllImport ("uvwrap")]
+		public static extern IntPtr manos_uv_tcp_t_create();
+		[DllImport ("uvwrap")]
+		public static extern void manos_uv_destroy(IntPtr uv_tcp_t_ptr);
+	}
+	class TcpSocket : TcpEntity {
+		public event Action<byte[], int> OnData;
+		public event Action OnClose;
+		private event Action OnConnect;
+		private IntPtr Parent = IntPtr.Zero;
+		public TcpSocket()
+		{
+			this.Handle = manos_uv_connect_t_create();
+			this.Parent = manos_uv_tcp_t_create();
+			uv_tcp_init(this.Parent);
+		}
+		public TcpSocket(IntPtr ServerHandle) : base()
+		{
+			uv_accept(ServerHandle, this.Handle);
+			manos_uv_read_start(this.Handle, (socket, count, data) => {
+				RaiseData(data, count);
+			}, () => {
+				RaiseClose();
+				this.Dispose();
+			});
+		}
+		private void RaiseData(byte[] data, int count)
+		{
+			if (OnData != null) 
+			{
+				OnData(data, count);
+			}
+		}
+		private void RaiseClose()
+		{
+			if (OnClose != null)
+			{
+				OnClose();
+			}
+		}
+		private void HandleConnect()
+		{
+			if (OnConnect != null)
+			{
+				OnConnect();
+			}
+		}
+		public void Connect(string ip, int port, Action OnConnect)
+		{
+			manos_uv_tcp_connect(this.Handle, this.Parent, ip, port, (sock, status) => {
+				manos_uv_read_start(this.Parent, (socket, count, data) => {
+					RaiseData(data, count);
+				}, () => {
+					RaiseClose();
+					this.Dispose();
+				});
+				OnConnect();
+			});	
+		}
+		public void Write(byte[] data, int length)
+		{
+			if (this.Parent == IntPtr.Zero) {
+				manos_uv_write(this.Handle, data, length);
+			} else {
+				manos_uv_write(this.Parent, data, length);
+			}
+		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void manos_uv_eof_cb();
 		[DllImport ("uvwrap")]
-		public static extern void uv_tcp_init (IntPtr socket);
-		[DllImport ("uvwrap")]
-		public static extern void manos_uv_tcp_bind (IntPtr socket, string host, int port);
-		[DllImport ("uvwrap")]
-		public static extern void uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
-		[DllImport ("uvwrap")]
 		public static extern void uv_accept(IntPtr socket, IntPtr stream);
 		[DllImport ("uvwrap")]
 		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
 		[DllImport ("uvwrap")]
-		public static extern IntPtr manos_uv_tcp_t_create();
-		[DllImport ("uvwrap")]
-		public static extern void manos_uv_tcp_t_destroy(IntPtr uv_tcp_t_ptr);
-		[DllImport ("uvwrap")]
 		public static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, IntPtr handle, string ip, int port, uv_connection_cb cb);
+		[DllImport ("uvwrap")]
+		public static extern IntPtr manos_uv_connect_t_create();
+	}
+	class TcpServer : TcpEntity {
+		public TcpServer() : base() {}
+		public void Listen(string ip, int port, Action<TcpSocket> OnConnect)
+		{
+			manos_uv_tcp_bind(this.Handle, ip, port);
+			uv_tcp_listen(this.Handle, 128, (sock, status) => {
+				OnConnect(new TcpSocket(this.Handle));
+			});
+		}
+		[DllImport ("uvwrap")]
+		public static extern void manos_uv_tcp_bind (IntPtr socket, string host, int port);
+		[DllImport ("uvwrap")]
+		public static extern void uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
 	}
 }
