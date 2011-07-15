@@ -42,6 +42,7 @@ static void after_shutdown(uv_shutdown_t* req, int status) {
 static void read_cb(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 {
 	uv_shutdown_t* req;
+	read_settings* sett;
 	if (nread < 0) {
 		/* error or eof */
 		if (buf.base) {
@@ -55,7 +56,7 @@ static void read_cb(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 		free(buf.base);
 		return;
 	}
-	read_settings *sett = handle->data;
+	sett = handle->data;
 	sett->read(handle, nread, buf.base);
 	free(buf.base);
 	//((manos_uv_read_cb)handle->data)(handle, nread, buf.base);
@@ -66,11 +67,12 @@ static void after_write(uv_write_t* req, int status)
 }
 int manos_uv_write(uv_tcp_t* handle, unsigned char* data, int length)
 {
-	uv_write_t *wr = malloc(sizeof(uv_write_t));
 	uv_buf_t buf;
+	uv_buf_t a[1];
+	uv_write_t *wr = malloc(sizeof(uv_write_t));
 	buf.base = data;
 	buf.len = length;
-	uv_buf_t a[] = { buf };
+	a[0] = buf;
 	return uv_write(wr, (uv_stream_t *)handle, a, 1, after_write );
 }
 int manos_uv_read_start(uv_stream_t* handle, manos_uv_read_cb manos_read_cb, manos_uv_eof_cb manos_done_cb)
