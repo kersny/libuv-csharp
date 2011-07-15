@@ -33,6 +33,7 @@ static uv_buf_t alloc_cb(uv_stream_t* handle, size_t suggested_size)
 static void on_close(uv_handle_t* peer) {
 	read_settings *sett = peer->data;
 	sett->done();
+	free(sett);
 }
 static void after_shutdown(uv_shutdown_t* req, int status) {
 	uv_close((uv_handle_t *)req->handle, on_close);
@@ -56,6 +57,7 @@ static void read_cb(uv_stream_t* handle, ssize_t nread, uv_buf_t buf)
 	}
 	read_settings *sett = handle->data;
 	sett->read(handle, nread, buf.base);
+	free(buf.base);
 	//((manos_uv_read_cb)handle->data)(handle, nread, buf.base);
 }
 static void after_write(uv_write_t* req, int status)

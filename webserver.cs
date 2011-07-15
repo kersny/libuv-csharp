@@ -8,11 +8,20 @@ namespace webserver {
 		public static extern void uv_init ();
 		[DllImport ("uvwrap")]
 		public static extern void uv_run ();
+		[DllImport ("uvwrap")]
+		public static extern void uv_unref ();
+		static int clientcount = 0;
 		static void Main ()
 		{
 			uv_init();
 			var server = new TcpServer();
 			server.Listen("0.0.0.0", 8080, (socket) => {
+				clientcount++;
+				socket.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
+				if (clientcount > 5) {
+					socket.Close();
+					server.Close();
+				}
 				Console.WriteLine("Client Connected");
 				socket.OnData += (data, len) => {
 					Console.WriteLine("Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
@@ -25,6 +34,7 @@ namespace webserver {
 			var client = new TcpSocket();
 			client.OnData += (data, len) => {
 				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
+				client.Close();
 			};
 			client.Connect("127.0.0.1", 8080, () => {
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
@@ -46,14 +56,22 @@ namespace webserver {
 		{
 			manos_uv_destroy(this.Handle);
 		}
+		public void Close()
+		{
+			uv_close(this.Handle, (x) => {});
+		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void uv_connection_cb(IntPtr socket, int status);
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		internal delegate void uv_close_cb(IntPtr socket);
 		[DllImport ("uvwrap")]
 		public static extern void uv_tcp_init (IntPtr socket);
 		[DllImport ("uvwrap")]
 		public static extern IntPtr manos_uv_tcp_t_create();
 		[DllImport ("uvwrap")]
 		public static extern void manos_uv_destroy(IntPtr uv_tcp_t_ptr);
+		[DllImport ("uvwrap")]
+		public static extern int uv_close(IntPtr handle, uv_close_cb cb);
 	}
 	class TcpSocket : TcpEntity {
 		public event Action<byte[], int> OnData;
@@ -116,6 +134,14 @@ namespace webserver {
 			} else {
 				manos_uv_write(this.Parent, data, length);
 			}
+		}
+		public new void Dispose()
+		{
+			if (this.Parent != IntPtr.Zero)
+			{
+				manos_uv_destroy(this.Parent);
+			}
+			base.Dispose();
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
