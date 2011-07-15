@@ -34,7 +34,6 @@ namespace webserver {
 			var client = new TcpSocket();
 			client.OnData += (data, len) => {
 				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
-				client.Close();
 			};
 			client.Connect("127.0.0.1", 8080, () => {
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
