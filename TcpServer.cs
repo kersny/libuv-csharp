@@ -4,7 +4,6 @@ namespace Libuv {
 	class TcpServer : TcpEntity {
 		public TcpServer() : base() 
 		{
-			this.Handle = manos_uv_tcp_t_create();
 			int err = uv_tcp_init(this.Handle);
 			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}

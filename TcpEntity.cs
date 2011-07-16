@@ -55,8 +55,9 @@ namespace Libuv {
 		public IntPtr Handle;
 		public TcpEntity()
 		{
+			this.Handle = manos_uv_tcp_t_create();
 		}
-		public  void Dispose()
+		public void Dispose()
 		{
 			manos_uv_destroy(this.Handle);
 		}

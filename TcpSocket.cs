@@ -6,17 +6,15 @@ namespace Libuv {
 		public event Action<byte[], int> OnData;
 		public event Action OnClose;
 		private event Action OnConnect;
-		private IntPtr Parent = IntPtr.Zero;
+		private IntPtr Connection = IntPtr.Zero;
 		public TcpSocket()
 		{
-			this.Handle = manos_uv_connect_t_create();
-			this.Parent = manos_uv_tcp_t_create();
-			int err = uv_tcp_init(this.Parent);
+			this.Connection = manos_uv_connect_t_create();
+			int err = uv_tcp_init(this.Handle);
 			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public TcpSocket(IntPtr ServerHandle) : base()
 		{
-			this.Handle = manos_uv_tcp_t_create();
 			int err = uv_tcp_init(this.Handle);
 			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 			err = uv_accept(ServerHandle, this.Handle);
@@ -52,8 +50,8 @@ namespace Libuv {
 		}
 		public void Connect(string ip, int port, Action OnConnect)
 		{
-			int err = manos_uv_tcp_connect(this.Handle, this.Parent, ip, port, (sock, status) => {
-				err = manos_uv_read_start(this.Parent, (socket, count, data) => {
+			int err = manos_uv_tcp_connect(this.Connection, this.Handle, ip, port, (sock, status) => {
+				err = manos_uv_read_start(this.Handle, (socket, count, data) => {
 					RaiseData(data, count);
 				}, () => {
 					RaiseClose();
@@ -66,19 +64,14 @@ namespace Libuv {
 		}
 		public void Write(byte[] data, int length)
 		{
-			int err;
-			if (this.Parent == IntPtr.Zero) {
-				err = manos_uv_write(this.Handle, data, length);
-			} else {
-				err = manos_uv_write(this.Parent, data, length);
-			}
+			int err = manos_uv_write(this.Handle, data, length);
 			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public new void Dispose()
 		{
-			if (this.Parent != IntPtr.Zero)
+			if (this.Connection != IntPtr.Zero)
 			{
-				manos_uv_destroy(this.Parent);
+				manos_uv_destroy(this.Connection);
 			}
 			base.Dispose();
 		}
