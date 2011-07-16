@@ -44,6 +44,55 @@ namespace webserver {
 			server.Dispose();
 		}
 	}
+	enum uv_err_code
+	{
+		UV_UNKNOWN = -1,
+		UV_OK = 0,
+		UV_EOF,
+		UV_EACCESS,
+		UV_EAGAIN,
+		UV_EADDRINUSE,
+		UV_EADDRNOTAVAIL,
+		UV_EAFNOSUPPORT,
+		UV_EALREADY,
+		UV_EBADF,
+		UV_EBUSY,
+		UV_ECONNABORTED,
+		UV_ECONNREFUSED,
+		UV_ECONNRESET,
+		UV_EDESTADDRREQ,
+		UV_EFAULT,
+		UV_EHOSTUNREACH,
+		UV_EINTR,
+		UV_EINVAL,
+		UV_EISCONN,
+		UV_EMFILE,
+		UV_ENETDOWN,
+		UV_ENETUNREACH,
+		UV_ENFILE,
+		UV_ENOBUFS,
+		UV_ENOMEM,
+		UV_ENONET,
+		UV_ENOPROTOOPT,
+		UV_ENOTCONN,
+		UV_ENOTSOCK,
+		UV_ENOTSUP,
+		UV_EPROTO,
+		UV_EPROTONOSUPPORT,
+		UV_EPROTOTYPE,
+		UV_ETIMEDOUT,
+		UV_ECHARSET,
+		UV_EAIFAMNOSUPPORT,
+		UV_EAINONAME,
+		UV_EAISERVICE,
+		UV_EAISOCKTYPE,
+		UV_ESHUTDOWN
+	}
+	struct uv_err_t
+	{
+		public uv_err_code code;
+		int sys_errno_;
+	}
 	abstract class TcpEntity : IDisposable {
 		public IntPtr Handle;
 		public TcpEntity()
@@ -55,20 +104,25 @@ namespace webserver {
 		}
 		public void Close()
 		{
-			uv_close(this.Handle, (x) => {});
+			int err = uv_close(this.Handle, (x) => {
+				this.Dispose();
+			});
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void uv_connection_cb(IntPtr socket, int status);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void uv_close_cb(IntPtr socket);
 		[DllImport ("uvwrap")]
-		public static extern void uv_tcp_init (IntPtr socket);
+		public static extern int uv_tcp_init (IntPtr socket);
 		[DllImport ("uvwrap")]
 		public static extern IntPtr manos_uv_tcp_t_create();
 		[DllImport ("uvwrap")]
 		public static extern void manos_uv_destroy(IntPtr uv_tcp_t_ptr);
 		[DllImport ("uvwrap")]
 		public static extern int uv_close(IntPtr handle, uv_close_cb cb);
+		[DllImport ("uvwrap")]
+		public static extern uv_err_t uv_last_err();
 	}
 	class TcpSocket : TcpEntity {
 		public event Action<byte[], int> OnData;
@@ -79,19 +133,23 @@ namespace webserver {
 		{
 			this.Handle = manos_uv_connect_t_create();
 			this.Parent = manos_uv_tcp_t_create();
-			uv_tcp_init(this.Parent);
+			int err = uv_tcp_init(this.Parent);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public TcpSocket(IntPtr ServerHandle) : base()
 		{
 			this.Handle = manos_uv_tcp_t_create();
-			uv_tcp_init(this.Handle);
-			uv_accept(ServerHandle, this.Handle);
-			manos_uv_read_start(this.Handle, (socket, count, data) => {
+			int err = uv_tcp_init(this.Handle);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			err = uv_accept(ServerHandle, this.Handle);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			err = manos_uv_read_start(this.Handle, (socket, count, data) => {
 				RaiseData(data, count);
 			}, () => {
 				RaiseClose();
 				this.Dispose();
 			});
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		private void RaiseData(byte[] data, int count)
 		{
@@ -116,23 +174,27 @@ namespace webserver {
 		}
 		public void Connect(string ip, int port, Action OnConnect)
 		{
-			manos_uv_tcp_connect(this.Handle, this.Parent, ip, port, (sock, status) => {
-				manos_uv_read_start(this.Parent, (socket, count, data) => {
+			int err = manos_uv_tcp_connect(this.Handle, this.Parent, ip, port, (sock, status) => {
+				err = manos_uv_read_start(this.Parent, (socket, count, data) => {
 					RaiseData(data, count);
 				}, () => {
 					RaiseClose();
 					this.Dispose();
 				});
+				if (err != 0) throw new Exception(uv_last_err().code.ToString());
 				OnConnect();
-			});	
+			});
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public void Write(byte[] data, int length)
 		{
+			int err;
 			if (this.Parent == IntPtr.Zero) {
-				manos_uv_write(this.Handle, data, length);
+				err = manos_uv_write(this.Handle, data, length);
 			} else {
-				manos_uv_write(this.Parent, data, length);
+				err = manos_uv_write(this.Parent, data, length);
 			}
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public new void Dispose()
 		{
@@ -147,7 +209,7 @@ namespace webserver {
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void manos_uv_eof_cb();
 		[DllImport ("uvwrap")]
-		public static extern void uv_accept(IntPtr socket, IntPtr stream);
+		public static extern int uv_accept(IntPtr socket, IntPtr stream);
 		[DllImport ("uvwrap")]
 		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
 		[DllImport ("uvwrap")]
@@ -161,18 +223,21 @@ namespace webserver {
 		public TcpServer() : base() 
 		{
 			this.Handle = manos_uv_tcp_t_create();
-			uv_tcp_init(this.Handle);
+			int err = uv_tcp_init(this.Handle);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		public void Listen(string ip, int port, Action<TcpSocket> OnConnect)
 		{
-			manos_uv_tcp_bind(this.Handle, ip, port);
-			uv_tcp_listen(this.Handle, 128, (sock, status) => {
+			int err = manos_uv_tcp_bind(this.Handle, ip, port);
+			if (err != 0 ) throw new Exception(uv_last_err().code.ToString());
+			err = uv_tcp_listen(this.Handle, 128, (sock, status) => {
 				OnConnect(new TcpSocket(this.Handle));
 			});
+			if (err != 0 ) throw new Exception(uv_last_err().code.ToString());
 		}
 		[DllImport ("uvwrap")]
-		public static extern void manos_uv_tcp_bind (IntPtr socket, string host, int port);
+		public static extern int manos_uv_tcp_bind (IntPtr socket, string host, int port);
 		[DllImport ("uvwrap")]
-		public static extern void uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
+		public static extern int uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
 	}
 }
