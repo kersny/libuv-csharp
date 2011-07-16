@@ -48,8 +48,6 @@ namespace webserver {
 		public IntPtr Handle;
 		public TcpEntity()
 		{
-			this.Handle = manos_uv_tcp_t_create();
-			uv_tcp_init(this.Handle);
 		}
 		public  void Dispose()
 		{
@@ -85,6 +83,8 @@ namespace webserver {
 		}
 		public TcpSocket(IntPtr ServerHandle) : base()
 		{
+			this.Handle = manos_uv_tcp_t_create();
+			uv_tcp_init(this.Handle);
 			uv_accept(ServerHandle, this.Handle);
 			manos_uv_read_start(this.Handle, (socket, count, data) => {
 				RaiseData(data, count);
@@ -158,7 +158,11 @@ namespace webserver {
 		public static extern IntPtr manos_uv_connect_t_create();
 	}
 	class TcpServer : TcpEntity {
-		public TcpServer() : base() {}
+		public TcpServer() : base() 
+		{
+			this.Handle = manos_uv_tcp_t_create();
+			uv_tcp_init(this.Handle);
+		}
 		public void Listen(string ip, int port, Action<TcpSocket> OnConnect)
 		{
 			manos_uv_tcp_bind(this.Handle, ip, port);

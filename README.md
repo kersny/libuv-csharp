@@ -9,9 +9,7 @@ C# bindings to [libuv][0]... that's about it. Ultimate goal is to provide really
 Status
 -----
 
-It runs on my machine :)
-Right now the server is one file and simply writes what it recieves over tcp to stdout.
-Currently the makefile works on OS X and Ubuntu. Windows build is using a batch file because make on Windows sucks.
+Builds and runs on Windows, Mac and Linux.
 
 Requirements
 ------------
@@ -57,7 +55,6 @@ Somewhere else:
 TODO
 ----
 
-* Build on all platforms [DONE]
 * Implement all of the api
 * Get rid of memory leaks
 
