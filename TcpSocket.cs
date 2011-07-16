@@ -1,0 +1,100 @@
+using System;
+using System.Runtime.InteropServices;
+
+namespace Libuv {
+	class TcpSocket : TcpEntity {
+		public event Action<byte[], int> OnData;
+		public event Action OnClose;
+		private event Action OnConnect;
+		private IntPtr Parent = IntPtr.Zero;
+		public TcpSocket()
+		{
+			this.Handle = manos_uv_connect_t_create();
+			this.Parent = manos_uv_tcp_t_create();
+			int err = uv_tcp_init(this.Parent);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+		}
+		public TcpSocket(IntPtr ServerHandle) : base()
+		{
+			this.Handle = manos_uv_tcp_t_create();
+			int err = uv_tcp_init(this.Handle);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			err = uv_accept(ServerHandle, this.Handle);
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			err = manos_uv_read_start(this.Handle, (socket, count, data) => {
+				RaiseData(data, count);
+			}, () => {
+				RaiseClose();
+				this.Dispose();
+			});
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+		}
+		private void RaiseData(byte[] data, int count)
+		{
+			if (OnData != null) 
+			{
+				OnData(data, count);
+			}
+		}
+		private void RaiseClose()
+		{
+			if (OnClose != null)
+			{
+				OnClose();
+			}
+		}
+		private void HandleConnect()
+		{
+			if (OnConnect != null)
+			{
+				OnConnect();
+			}
+		}
+		public void Connect(string ip, int port, Action OnConnect)
+		{
+			int err = manos_uv_tcp_connect(this.Handle, this.Parent, ip, port, (sock, status) => {
+				err = manos_uv_read_start(this.Parent, (socket, count, data) => {
+					RaiseData(data, count);
+				}, () => {
+					RaiseClose();
+					this.Dispose();
+				});
+				if (err != 0) throw new Exception(uv_last_err().code.ToString());
+				OnConnect();
+			});
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+		}
+		public void Write(byte[] data, int length)
+		{
+			int err;
+			if (this.Parent == IntPtr.Zero) {
+				err = manos_uv_write(this.Handle, data, length);
+			} else {
+				err = manos_uv_write(this.Parent, data, length);
+			}
+			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+		}
+		public new void Dispose()
+		{
+			if (this.Parent != IntPtr.Zero)
+			{
+				manos_uv_destroy(this.Parent);
+			}
+			base.Dispose();
+		}
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		internal delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		internal delegate void manos_uv_eof_cb();
+		[DllImport ("uvwrap")]
+		public static extern int uv_accept(IntPtr socket, IntPtr stream);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
+		[DllImport ("uvwrap")]
+		public static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, IntPtr handle, string ip, int port, uv_connection_cb cb);
+		[DllImport ("uvwrap")]
+		public static extern IntPtr manos_uv_connect_t_create();
+	}
+}

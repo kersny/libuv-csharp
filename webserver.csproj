@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="webserver.cs" />
+    <Compile Include="TcpEntity.cs" />
+    <Compile Include="TcpSocket.cs" />
+    <Compile Include="TcpServer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="ListSources">
