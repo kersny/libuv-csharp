@@ -5,18 +5,18 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}</ProjectGuid>
+    <ProjectGuid>{26D063C9-1C31-4D02-87DC-B92C8FA5952E}</ProjectGuid>
     <OutputType>Exe</OutputType>
-   <RootNamespace>webserver</RootNamespace>
-    <AssemblyName>webserver</AssemblyName>
+   <RootNamespace>Libuv</RootNamespace>
+    <AssemblyName>Libuv.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <IntermediateOutputPath>build/tmp/</IntermediateOutputPath>
+    <IntermediateOutputPath>../../build/tmp/</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>build\</OutputPath>
+    <OutputPath>../../build/</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>build\</OutputPath>
+    <OutputPath>../../build/</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -38,12 +38,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <ProjectReference Include="../Libuv/Libuv.csproj">
+	    <Name>Libuv</Name>
+	    <Project>{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="webserver.cs" />
-    <Compile Include="TcpEntity.cs" />
-    <Compile Include="TcpSocket.cs" />
-    <Compile Include="TcpServer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="ListSources">

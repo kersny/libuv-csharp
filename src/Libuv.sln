@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{13C31A1D-9AA8-43D7-BAEA-B9F4E9DE202B}") = "Libuv", "Libuv\Libuv.csproj", "{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}"
+EndProject
+Project("{966921C3-BDCB-4030-9D41-5BBF59887EC2}") = "Libuv.Tests", "Libuv.Tests\Libuv.Tests.csproj", "{26D063C9-1C31-4D02-87DC-B92C8FA5952E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2548B25A-2E1F-4E21-BC43-7E39B1F6F23F}.Release|Win32.ActiveCfg = Release|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{26D063C9-1C31-4D02-87DC-B92C8FA5952E}.Release|Win32.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal

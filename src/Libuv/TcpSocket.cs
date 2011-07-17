@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace Libuv {
-	class TcpSocket : TcpEntity {
+	public class TcpSocket : TcpEntity {
 		public event Action<byte[], int> OnData;
 		public event Action OnClose;
 		private event Action OnConnect;
@@ -76,18 +76,18 @@ namespace Libuv {
 			base.Dispose();
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
+		public delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate void manos_uv_eof_cb();
+		public delegate void manos_uv_eof_cb();
 		[DllImport ("uvwrap")]
-		public static extern int uv_accept(IntPtr socket, IntPtr stream);
+		internal static extern int uv_accept(IntPtr socket, IntPtr stream);
 		[DllImport ("uvwrap")]
-		public static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
+		internal static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
 		[DllImport ("uvwrap")]
-		public static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
+		internal static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
 		[DllImport ("uvwrap")]
-		public static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, IntPtr handle, string ip, int port, uv_connection_cb cb);
+		internal static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, IntPtr handle, string ip, int port, uv_connection_cb cb);
 		[DllImport ("uvwrap")]
-		public static extern IntPtr manos_uv_connect_t_create();
+		internal static extern IntPtr manos_uv_connect_t_create();
 	}
 }

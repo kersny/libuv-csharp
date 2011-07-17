@@ -69,9 +69,9 @@ namespace Libuv {
 			if (err != 0) throw new Exception(uv_last_err().code.ToString());
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate void uv_connection_cb(IntPtr socket, int status);
+		public delegate void uv_connection_cb(IntPtr socket, int status);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate void uv_close_cb(IntPtr socket);
+		public delegate void uv_close_cb(IntPtr socket);
 		[DllImport ("uvwrap")]
 		internal static extern int uv_tcp_init (IntPtr socket);
 		[DllImport ("uvwrap")]

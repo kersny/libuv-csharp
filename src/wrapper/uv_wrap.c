@@ -1,4 +1,4 @@
-#include "libuv/include/uv.h"
+#include "../../deps/libuv/include/uv.h"
 #include <stdlib.h>
 
 typedef struct {

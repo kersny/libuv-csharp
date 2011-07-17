@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using Libuv;
 
-namespace webserver {
+namespace Libuv.Tests {
 	class webserver {
 		[DllImport ("uvwrap")]
 		public static extern void uv_init ();

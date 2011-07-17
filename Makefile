@@ -1,27 +1,38 @@
+#####
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
-ifdef MSVC
-	uname_S := MINGW
+CSBUILD=xbuild
+UVFLAGS=CPPFLAGS="-m32"
+CC=$(PREFIX)gcc
+
+STATIC_LIBRARY=so
+
+ifeq (Darwin,$(uname_S))
+STATIC_LIBRARY=dylib
 endif
 
-ifneq (,$(findstring MINGW,$(uname_S)))
-	include config-mingw.mk
-else
-	include config-unix.mk
-endif
+so=-shared
+dylib=-dynamiclib
+#####
+TEST_DIRS = src/Libuv.Tests
+TEST_DEPS := $(foreach dir, $(TEST_DIRS), $(wildcard $(dir)/*))
+LIBUV_DIRS = src/Libuv
+LIBUV_DEPS := $(foreach dir, $(LIBUV_DIRS), $(wildcard $(dir)/*))
 
-all: build/webserver.exe build/libuvwrap.$(STATIC_LIBRARY)
+all: build/Libuv.Tests.exe
 
-build/webserver.exe: webserver.cs webserver.csproj
-	$(CSBUILD) webserver.csproj
+build/Libuv.dll: build/libuvwrap.$(STATIC_LIBRARY) $(LIBUV_DEPS)
+	$(CSBUILD) src/Libuv.sln /target:Libuv
 
-libuv/uv.a:
-	$(UVFLAGS) $(MAKE) -C libuv
+build/Libuv.Tests.exe: build/Libuv.dll $(TEST_DEPS)
+	$(CSBUILD) src/Libuv.sln
 
-build/libuvwrap.%: libuv/uv.a uv_wrap.c
-	$(CC) $($(STATIC_LIBRARY)) uv_wrap.c -m32 -o build/libuvwrap.$(STATIC_LIBRARY) libuv/uv.a 
+deps/libuv/uv.a:
+	$(UVFLAGS) $(MAKE) -C deps/libuv
+
+build/libuvwrap.%: deps/libuv/uv.a src/wrapper/uv_wrap.c
+	$(CC) $($(STATIC_LIBRARY)) src/wrapper/uv_wrap.c -m32 -o build/libuvwrap.$(STATIC_LIBRARY) deps/libuv/uv.a 
 
 clean:
 	$(RM) -r build/
-	$(RM) uv_wrap.c.*
-	$(MAKE) -C libuv clean
+	$(MAKE) -C deps/libuv clean
