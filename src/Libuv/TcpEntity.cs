@@ -66,7 +66,7 @@ namespace Libuv {
 			int err = uv_close(this.Handle, (x) => {
 				this.Dispose();
 			});
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void uv_connection_cb(IntPtr socket, int status);
@@ -81,6 +81,6 @@ namespace Libuv {
 		[DllImport ("uvwrap")]
 		internal static extern int uv_close(IntPtr handle, uv_close_cb cb);
 		[DllImport ("uvwrap")]
-		internal static extern uv_err_t uv_last_err();
+		internal static extern uv_err_t uv_last_error();
 	}
 }

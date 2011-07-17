@@ -11,21 +11,21 @@ namespace Libuv {
 		{
 			this.Connection = manos_uv_connect_t_create();
 			int err = uv_tcp_init(this.Handle);
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public TcpSocket(IntPtr ServerHandle) : base()
 		{
 			int err = uv_tcp_init(this.Handle);
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 			err = uv_accept(ServerHandle, this.Handle);
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 			err = manos_uv_read_start(this.Handle, (socket, count, data) => {
 				RaiseData(data, count);
 			}, () => {
 				RaiseClose();
 				this.Dispose();
 			});
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		private void RaiseData(byte[] data, int count)
 		{
@@ -57,15 +57,15 @@ namespace Libuv {
 					RaiseClose();
 					this.Dispose();
 				});
-				if (err != 0) throw new Exception(uv_last_err().code.ToString());
+				if (err != 0) throw new Exception(uv_last_error().code.ToString());
 				OnConnect();
 			});
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public void Write(byte[] data, int length)
 		{
 			int err = manos_uv_write(this.Handle, data, length);
-			if (err != 0) throw new Exception(uv_last_err().code.ToString());
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public new void Dispose()
 		{
