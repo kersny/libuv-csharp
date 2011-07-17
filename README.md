@@ -35,14 +35,14 @@ Build and Run
 ### *nixes
 
 	make
-	mono build/webserver.exe
+	mono build/Libuv.Tests.exe
 	(to clean) make clean
 
 ### Windows
 
 	winbuild.bat
 	cd build
-	webserver.exe
+	Libuv.Tests.exe
 	(to clean) winbuild.bat clean
 
 
