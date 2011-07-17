@@ -28,6 +28,7 @@ build/Libuv.Tests.exe: build/Libuv.dll $(TEST_DEPS)
 	$(CSBUILD) src/Libuv.sln
 
 deps/libuv/uv.a:
+	mkdir build/
 	$(UVFLAGS) $(MAKE) -C deps/libuv
 
 build/libuvwrap.%: deps/libuv/uv.a src/wrapper/uv_wrap.c
