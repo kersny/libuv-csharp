@@ -75,6 +75,11 @@ namespace Libuv {
 			}
 			base.Dispose();
 		}
+		public new void Close()
+		{
+			uv_close(this.Handle, (ptr) => {
+					});
+		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
