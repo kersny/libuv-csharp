@@ -52,18 +52,31 @@ namespace Libuv {
 		int sys_errno_;
 	}
 	public abstract class TcpEntity : IDisposable {
-		public IntPtr Handle;
+		internal HandleRef _handle;
 		public TcpEntity()
 		{
-			this.Handle = manos_uv_tcp_t_create();
+			IntPtr h = manos_uv_tcp_t_create();
+			this._handle = new HandleRef(this, h);
+			int err = uv_tcp_init(this._handle);
+			if (err != 0) throw new Exception(uv_last_error().code.ToString());
+		}
+		private void Cleanup()
+		{
+			manos_uv_destroy(this._handle);
+			this._handle = new HandleRef(this, IntPtr.Zero);
+		}
+		~TcpEntity()
+		{
+			Cleanup();
 		}
 		public void Dispose()
 		{
-			manos_uv_destroy(this.Handle);
+			Cleanup();
+			System.GC.SuppressFinalize(this);
 		}
 		public void Close()
 		{
-			int err = uv_close(this.Handle, (x) => {
+			int err = uv_close(this._handle, (x) => {
 				this.Dispose();
 			});
 			if (err != 0) throw new Exception(uv_last_error().code.ToString());
@@ -73,13 +86,15 @@ namespace Libuv {
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void uv_close_cb(IntPtr socket);
 		[DllImport ("uvwrap")]
-		internal static extern int uv_tcp_init (IntPtr socket);
+		internal static extern int uv_tcp_init (HandleRef socket);
 		[DllImport ("uvwrap")]
 		internal static extern IntPtr manos_uv_tcp_t_create();
 		[DllImport ("uvwrap")]
+		internal static extern void manos_uv_destroy(HandleRef uv_tcp_t_ptr);
+		[DllImport ("uvwrap")]
 		internal static extern void manos_uv_destroy(IntPtr uv_tcp_t_ptr);
 		[DllImport ("uvwrap")]
-		internal static extern int uv_close(IntPtr handle, uv_close_cb cb);
+		internal static extern int uv_close(HandleRef handle, uv_close_cb cb);
 		[DllImport ("uvwrap")]
 		internal static extern uv_err_t uv_last_error();
 	}

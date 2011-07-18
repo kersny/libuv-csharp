@@ -7,19 +7,15 @@ namespace Libuv {
 		public event Action OnClose;
 		private event Action OnConnect;
 		private IntPtr Connection = IntPtr.Zero;
-		public TcpSocket()
+		public TcpSocket() : base()
 		{
 			this.Connection = manos_uv_connect_t_create();
-			int err = uv_tcp_init(this.Handle);
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
-		public TcpSocket(IntPtr ServerHandle) : base()
+		public TcpSocket(HandleRef ServerHandle) : base()
 		{
-			int err = uv_tcp_init(this.Handle);
+			int err = uv_accept(ServerHandle, this._handle);
 			if (err != 0) throw new Exception(uv_last_error().code.ToString());
-			err = uv_accept(ServerHandle, this.Handle);
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
-			err = manos_uv_read_start(this.Handle, (socket, count, data) => {
+			err = manos_uv_read_start(this._handle, (socket, count, data) => {
 				RaiseData(data, count);
 			}, () => {
 				RaiseClose();
@@ -50,8 +46,8 @@ namespace Libuv {
 		}
 		public void Connect(string ip, int port, Action OnConnect)
 		{
-			int err = manos_uv_tcp_connect(this.Connection, this.Handle, ip, port, (sock, status) => {
-				err = manos_uv_read_start(this.Handle, (socket, count, data) => {
+			int err = manos_uv_tcp_connect(this.Connection, this._handle, ip, port, (sock, status) => {
+				err = manos_uv_read_start(this._handle, (socket, count, data) => {
 					RaiseData(data, count);
 				}, () => {
 					RaiseClose();
@@ -64,7 +60,7 @@ namespace Libuv {
 		}
 		public void Write(byte[] data, int length)
 		{
-			int err = manos_uv_write(this.Handle, data, length);
+			int err = manos_uv_write(this._handle, data, length);
 			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public new void Dispose()
@@ -77,21 +73,20 @@ namespace Libuv {
 		}
 		public new void Close()
 		{
-			uv_close(this.Handle, (ptr) => {
-					});
+			uv_close(this._handle, (ptr) => {});
 		}
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void manos_uv_read_cb(IntPtr socket, int count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=1)] byte[] data);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void manos_uv_eof_cb();
 		[DllImport ("uvwrap")]
-		internal static extern int uv_accept(IntPtr socket, IntPtr stream);
+		internal static extern int uv_accept(HandleRef socket, HandleRef stream);
 		[DllImport ("uvwrap")]
-		internal static extern int manos_uv_read_start(IntPtr stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
+		internal static extern int manos_uv_read_start(HandleRef stream, manos_uv_read_cb cb, manos_uv_eof_cb done);
 		[DllImport ("uvwrap")]
-		internal static extern int manos_uv_write(IntPtr uv_tcp_t_ptr, byte[] data, int length);
+		internal static extern int manos_uv_write(HandleRef uv_tcp_t_ptr, byte[] data, int length);
 		[DllImport ("uvwrap")]
-		internal static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, IntPtr handle, string ip, int port, uv_connection_cb cb);
+		internal static extern int manos_uv_tcp_connect(IntPtr uv_connect_t_ptr, HandleRef handle, string ip, int port, uv_connection_cb cb);
 		[DllImport ("uvwrap")]
 		internal static extern IntPtr manos_uv_connect_t_create();
 	}

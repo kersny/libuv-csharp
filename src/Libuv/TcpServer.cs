@@ -4,21 +4,19 @@ namespace Libuv {
 	public class TcpServer : TcpEntity {
 		public TcpServer() : base() 
 		{
-			int err = uv_tcp_init(this.Handle);
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public void Listen(string ip, int port, Action<TcpSocket> OnConnect)
 		{
-			int err = manos_uv_tcp_bind(this.Handle, ip, port);
+			int err = manos_uv_tcp_bind(this._handle, ip, port);
 			if (err != 0 ) throw new Exception(uv_last_error().code.ToString());
-			err = uv_tcp_listen(this.Handle, 128, (sock, status) => {
-				OnConnect(new TcpSocket(this.Handle));
+			err = uv_tcp_listen(this._handle, 128, (sock, status) => {
+				OnConnect(new TcpSocket(this._handle));
 			});
 			if (err != 0 ) throw new Exception(uv_last_error().code.ToString());
 		}
 		[DllImport ("uvwrap")]
-		internal static extern int manos_uv_tcp_bind (IntPtr socket, string host, int port);
+		internal static extern int manos_uv_tcp_bind (HandleRef socket, string host, int port);
 		[DllImport ("uvwrap")]
-		internal static extern int uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
+		internal static extern int uv_tcp_listen(HandleRef socket, int backlog, uv_connection_cb callback);
 	}
 }
