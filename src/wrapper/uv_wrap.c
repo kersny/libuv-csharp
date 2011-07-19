@@ -93,3 +93,11 @@ void manos_uv_destroy(uv_tcp_t* ptr)
 {
 	free(ptr);
 }
+uv_prepare_t* create_prepare_watcher()
+{
+	return malloc(sizeof(uv_prepare_t));
+}
+void destroy_watcher(uv_prepare_t* ptr)
+{
+	free(ptr);
+}

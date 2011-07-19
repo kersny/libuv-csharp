@@ -43,6 +43,8 @@
     <Compile Include="TcpEntity.cs" />
     <Compile Include="TcpSocket.cs" />
     <Compile Include="TcpServer.cs" />
+    <Compile Include="Watcher.cs" />
+    <Compile Include="PrepareWatcher.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="ListSources">

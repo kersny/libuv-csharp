@@ -15,6 +15,10 @@ namespace Libuv.Tests {
 		static void Main ()
 		{
 			uv_init();
+			var watch = new PrepareWatcher((ptr, stat) => {
+				Console.WriteLine("Prepare Watcher Called");
+			});
+			watch.Start();
 			var server = new TcpServer();
 			server.Listen("0.0.0.0", 8080, (socket) => {
 				clientcount++;
@@ -35,12 +39,17 @@ namespace Libuv.Tests {
 			var client = new TcpSocket();
 			client.OnData += (data, len) => {
 				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
+				watch.Stop();
 				client.Close();
 			};
 			client.Connect("127.0.0.1", 8080, () => {
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
 				client.Write(message, message.Length);
 			});
+			var watch2 = new PrepareWatcher((ptr, stat) => {
+				Console.WriteLine("Prepare Watcher 2 Called");
+			});
+			watch2.Start();
 			uv_run();
 		}
 	}
