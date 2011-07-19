@@ -39,20 +39,5 @@ namespace Libuv {
 		{
 			uv_prepare_stop(this.watcher);
 		}
-		~PrepareWatcher()
-		{
-			Cleanup();
-		}
-		private void Cleanup()
-		{
-			gc_handle.Free();
-			destroy_watcher(this.watcher);
-		}
-		public override void Dispose()
-		{
-			Cleanup();
-			GC.SuppressFinalize(this);
-
-		}
 	}
 }

@@ -51,6 +51,14 @@ namespace Libuv.Tests {
 				Console.WriteLine("Prepare Watcher 2 Called");
 			});
 			watch2.Start();
+			var check = new CheckWatcher((ptr, stat) => {
+				Console.WriteLine("Check Watcher Called");
+			});
+			check.Start();
+			var idle = new IdleWatcher((ptr, stat) => {
+				Console.WriteLine("Idle Watcher Called");
+			});
+			idle.Start();
 			uv_run();
 		}
 	}

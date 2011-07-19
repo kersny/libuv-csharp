@@ -98,26 +98,50 @@ typedef struct {
 	void* cb;
 } manos_static_data_container;
 typedef void (*manos_static_cb)(void* handle, int status);
-static void prepare_cb(uv_prepare_t* prepare, int status)
+static void watcher_cb(uv_handle_t* watcher, int status)
 {
-	manos_static_data_container* container = (manos_static_data_container*)prepare->data;
+	manos_static_data_container* container = (manos_static_data_container*)watcher->data;
 	manos_static_cb cb = container->cb;
 	cb(container->data, status);
+}
+void addstruct(uv_handle_t* handle, void* data, void* cb)
+{
+	manos_static_data_container* inter = malloc(sizeof(manos_static_data_container));
+	inter->data = data;
+	inter->cb = cb;
+	handle->data = inter;
 }
 uv_prepare_t* create_prepare_watcher(void* data, void* cb)
 {
 	uv_prepare_t* ret = malloc(sizeof(uv_prepare_t));
-	manos_static_data_container* inter = malloc(sizeof(manos_static_data_container));
-	inter->data = data;
-	inter->cb = cb;
-	ret->data = inter;
+	addstruct((uv_handle_t*)ret, data, cb);
 	return ret;
 }
 int manos_prepare_start(uv_prepare_t *ptr)
 {
-	uv_prepare_start(ptr, prepare_cb);
+	uv_prepare_start(ptr, watcher_cb);
 }
-void destroy_watcher(uv_prepare_t* ptr)
+uv_check_t* create_check_watcher(void* data, void* cb)
+{
+	uv_check_t* ret = malloc(sizeof(uv_check_t));
+	addstruct((uv_handle_t*)ret, data, cb);
+	return ret;
+}
+int manos_check_start(uv_check_t *ptr)
+{
+	uv_check_start(ptr, watcher_cb);
+}
+uv_idle_t* create_idle_watcher(void* data, void* cb)
+{
+	uv_idle_t* ret = malloc(sizeof(uv_idle_t));
+	addstruct((uv_handle_t*)ret, data, cb);
+	return ret;
+}
+int manos_idle_start(uv_idle_t *ptr)
+{
+	uv_idle_start(ptr, watcher_cb);
+}
+void destroy_watcher(uv_handle_t* ptr)
 {
 	free(ptr->data);
 	free(ptr);

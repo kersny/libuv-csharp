@@ -45,6 +45,8 @@
     <Compile Include="TcpServer.cs" />
     <Compile Include="Watcher.cs" />
     <Compile Include="PrepareWatcher.cs" />
+    <Compile Include="CheckWatcher.cs" />
+    <Compile Include="IdleWatcher.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="ListSources">
