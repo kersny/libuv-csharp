@@ -6,20 +6,38 @@ namespace Libuv {
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void uv_prepare_cb(IntPtr socket, int status);
 		[DllImport("uvwrap")]
-		internal static extern IntPtr create_prepare_watcher();
+		internal static extern IntPtr create_prepare_watcher(IntPtr myself, uv_prepare_cb cb);
 		[DllImport("uvwrap")]
-		internal static extern int uv_prepare_init(HandleRef prepare);
+		internal static extern int uv_prepare_init(IntPtr prepare);
 		[DllImport("uvwrap")]
-		internal static extern int uv_prepare_start(HandleRef prepare, uv_prepare_cb cb);
+		internal static extern int manos_prepare_start(IntPtr prepare);
 		[DllImport("uvwrap")]
-		internal static extern int uv_prepare_stop(HandleRef prepare);
-		private uv_prepare_cb _callback;
-		public PrepareWatcher(uv_prepare_cb callback)
+		internal static extern int uv_prepare_stop(IntPtr prepare);
+		private static uv_prepare_cb unmanaged_callback;
+		private Action<PrepareWatcher, int> callback;
+		static PrepareWatcher()
 		{
-			IntPtr h = create_prepare_watcher();
-			this._handle = new HandleRef(this, h);
-			uv_prepare_init(this._handle);
-			this._callback = callback;
+			unmanaged_callback = StaticCallback;
+		}
+		public PrepareWatcher(Action<PrepareWatcher, int> callback)
+		{
+			watcher = create_prepare_watcher(GCHandle.ToIntPtr(gc_handle), unmanaged_callback);
+			uv_prepare_init(this.watcher);
+			this.callback = callback;
+		}
+		private static void StaticCallback(IntPtr watcher, int status)
+		{
+			var handle = GCHandle.FromIntPtr(watcher);
+			var watcher_instance = (PrepareWatcher)handle.Target;
+			watcher_instance.callback(watcher_instance, status);
+		}
+		public void Start()
+		{
+			manos_prepare_start(this.watcher);
+		}
+		public void Stop()
+		{
+			uv_prepare_stop(this.watcher);
 		}
 		~PrepareWatcher()
 		{
@@ -27,22 +45,14 @@ namespace Libuv {
 		}
 		private void Cleanup()
 		{
-			destroy_watcher(this._handle);
-			this._handle = new HandleRef(this, IntPtr.Zero);
+			gc_handle.Free();
+			destroy_watcher(this.watcher);
 		}
 		public override void Dispose()
 		{
 			Cleanup();
 			GC.SuppressFinalize(this);
 
-		}
-		public void Start()
-		{
-			uv_prepare_start(this._handle, this._callback);
-		}
-		public void Stop()
-		{
-			uv_prepare_stop(this._handle);
 		}
 	}
 }

@@ -93,11 +93,32 @@ void manos_uv_destroy(uv_tcp_t* ptr)
 {
 	free(ptr);
 }
-uv_prepare_t* create_prepare_watcher()
+typedef struct {
+	void* data;
+	void* cb;
+} manos_static_data_container;
+typedef void (*manos_static_cb)(void* handle, int status);
+static void prepare_cb(uv_prepare_t* prepare, int status)
 {
-	return malloc(sizeof(uv_prepare_t));
+	manos_static_data_container* container = (manos_static_data_container*)prepare->data;
+	manos_static_cb cb = container->cb;
+	cb(container->data, status);
+}
+uv_prepare_t* create_prepare_watcher(void* data, void* cb)
+{
+	uv_prepare_t* ret = malloc(sizeof(uv_prepare_t));
+	manos_static_data_container* inter = malloc(sizeof(manos_static_data_container));
+	inter->data = data;
+	inter->cb = cb;
+	ret->data = inter;
+	return ret;
+}
+int manos_prepare_start(uv_prepare_t *ptr)
+{
+	uv_prepare_start(ptr, prepare_cb);
 }
 void destroy_watcher(uv_prepare_t* ptr)
 {
+	free(ptr->data);
 	free(ptr);
 }
