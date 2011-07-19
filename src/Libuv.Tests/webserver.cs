@@ -40,6 +40,7 @@ namespace Libuv.Tests {
 			client.OnData += (data, len) => {
 				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, len));
 				watch.Stop();
+				watch.Dispose();
 				client.Close();
 			};
 			client.Connect("127.0.0.1", 8080, () => {
