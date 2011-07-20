@@ -141,6 +141,16 @@ int manos_idle_start(uv_idle_t *ptr)
 {
 	uv_idle_start(ptr, watcher_cb);
 }
+uv_timer_t* create_timer_watcher(uv_timer_cb cb, void *data)
+{
+	uv_timer_t* ret = malloc(sizeof(uv_timer_t));
+	addstruct((uv_handle_t*)ret, data, cb);
+	return ret;
+}
+int manos_timer_start(uv_timer_t *ptr, double after, double repeat)
+{
+	return uv_timer_start(ptr, watcher_cb, after, repeat);
+}
 void destroy_watcher(uv_handle_t* ptr)
 {
 	free(ptr->data);
