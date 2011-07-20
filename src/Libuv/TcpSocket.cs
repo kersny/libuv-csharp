@@ -14,14 +14,14 @@ namespace Libuv {
 		public TcpSocket(HandleRef ServerHandle) : base()
 		{
 			int err = uv_accept(ServerHandle, this._handle);
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
+			//if (err != 0) throw new Exception(uv_last_error().code.ToString());
 			err = manos_uv_read_start(this._handle, (socket, count, data) => {
 				RaiseData(data, count);
 			}, () => {
 				RaiseClose();
 				this.Dispose();
 			});
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
+			//if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		private void RaiseData(byte[] data, int count)
 		{
@@ -53,10 +53,10 @@ namespace Libuv {
 					RaiseClose();
 					this.Dispose();
 				});
-				if (err != 0) throw new Exception(uv_last_error().code.ToString());
+				//if (err != 0) throw new Exception(uv_last_error().code.ToString());
 				OnConnect();
 			});
-			if (err != 0) throw new Exception(uv_last_error().code.ToString());
+			//if (err != 0) throw new Exception(uv_last_error().code.ToString());
 		}
 		public void Write(byte[] data, int length)
 		{
