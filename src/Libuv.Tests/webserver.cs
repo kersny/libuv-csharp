@@ -15,8 +15,9 @@ namespace Libuv.Tests {
 		static void Main ()
 		{
 			uv_init();
+
 			var watch = new PrepareWatcher((ptr, stat) => {
-				Console.WriteLine("Prepare Watcher Called");
+		//		Console.WriteLine("Prepare Watcher Called");
 			});
 			watch.Start();
 			var server = new TcpServer();
@@ -48,17 +49,26 @@ namespace Libuv.Tests {
 				client.Write(message, message.Length);
 			});
 			var watch2 = new PrepareWatcher((ptr, stat) => {
-				Console.WriteLine("Prepare Watcher 2 Called");
+		//		Console.WriteLine("Prepare Watcher 2 Called");
 			});
 			watch2.Start();
 			var check = new CheckWatcher((ptr, stat) => {
-				Console.WriteLine("Check Watcher Called");
+		//		Console.WriteLine("Check Watcher Called");
 			});
 			check.Start();
 			var idle = new IdleWatcher((ptr, stat) => {
-				Console.WriteLine("Idle Watcher Called");
+		//		Console.WriteLine("Idle Watcher Called");
 			});
 			idle.Start();
+			var after = new TimerWatcher(new TimeSpan(0,0,5), new TimeSpan(1,0,0), (ptr, stat) => {
+				Console.WriteLine("After 5 Seconds");
+			});
+			after.Start();
+			var every = new TimerWatcher(new TimeSpan(0,0,5), (ptr, stat) => {
+				Console.WriteLine("Every 5 Seconds");
+			//	after.Stop();
+			});
+			every.Start();
 			uv_run();
 		}
 	}
