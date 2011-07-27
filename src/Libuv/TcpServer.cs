@@ -15,8 +15,8 @@ namespace Libuv {
 			if (err != 0 ) throw new Exception(uv_last_error().code.ToString());
 		}
 		[DllImport ("uvwrap")]
-		internal static extern int manos_uv_tcp_bind (HandleRef socket, string host, int port);
+		internal static extern int manos_uv_tcp_bind (IntPtr socket, string host, int port);
 		[DllImport ("uvwrap")]
-		internal static extern int uv_tcp_listen(HandleRef socket, int backlog, uv_connection_cb callback);
+		internal static extern int uv_tcp_listen(IntPtr socket, int backlog, uv_connection_cb callback);
 	}
 }
