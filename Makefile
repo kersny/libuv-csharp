@@ -12,7 +12,7 @@ STATIC_LIBRARY=dylib
 endif
 
 so=-shared
-dylib=-dynamiclib
+dylib=-dynamiclib -framework CoreServices
 #####
 TEST_DIRS = src/Libuv.Tests
 TEST_DEPS := $(foreach dir, $(TEST_DIRS), $(wildcard $(dir)/*))
@@ -21,7 +21,7 @@ LIBUV_DEPS := $(foreach dir, $(LIBUV_DIRS), $(wildcard $(dir)/*))
 
 all: build/Libuv.Tests.exe
 
-build/Libuv.dll: build/libuvwrap.$(STATIC_LIBRARY) $(LIBUV_DEPS)
+build/Libuv.dll: build/libuv.$(STATIC_LIBRARY) $(LIBUV_DEPS)
 	$(CSBUILD) src/Libuv.sln /target:Libuv
 
 build/Libuv.Tests.exe: build/Libuv.dll $(TEST_DEPS)
@@ -31,8 +31,10 @@ deps/libuv/uv.a:
 	mkdir build/
 	$(UVFLAGS) $(MAKE) -C deps/libuv
 
-build/libuvwrap.%: deps/libuv/uv.a src/wrapper/uv_wrap.c
-	$(CC) $($(STATIC_LIBRARY)) src/wrapper/uv_wrap.c -m32 -o build/libuvwrap.$(STATIC_LIBRARY) deps/libuv/uv.a 
+build/libuv.%: deps/libuv/uv.a
+	ar -x deps/libuv/uv.a
+	$(CC) $($(STATIC_LIBRARY)) -m32 -o build/libuvwrap.$(STATIC_LIBRARY) *.o
+	rm -rf __.SYMDEF\ SORTED *.o
 
 clean:
 	$(RM) -r build/

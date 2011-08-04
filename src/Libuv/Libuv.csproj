@@ -48,6 +48,7 @@
     <Compile Include="CheckWatcher.cs" />
     <Compile Include="IdleWatcher.cs" />
     <Compile Include="TimerWatcher.cs" />
+    <Compile Include="UV.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="ListSources">

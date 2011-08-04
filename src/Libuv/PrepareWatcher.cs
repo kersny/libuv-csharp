@@ -4,40 +4,44 @@ using System.Runtime.InteropServices;
 namespace Libuv {
 	public class PrepareWatcher : Watcher {
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_prepare_cb(IntPtr socket, int status);
-		[DllImport("uvwrap")]
-		internal static extern IntPtr create_prepare_watcher(IntPtr myself, uv_prepare_cb cb);
-		[DllImport("uvwrap")]
+		public delegate void uv_prepare_cb(IntPtr prepare, int status);
+		[DllImport("uv")]
 		internal static extern int uv_prepare_init(IntPtr prepare);
-		[DllImport("uvwrap")]
-		internal static extern int manos_prepare_start(IntPtr prepare);
-		[DllImport("uvwrap")]
+		[DllImport("uv")]
+		internal static extern int uv_prepare_start(IntPtr prepare, uv_prepare_cb cb);
+		[DllImport("uv")]
 		internal static extern int uv_prepare_stop(IntPtr prepare);
+
 		private static uv_prepare_cb unmanaged_callback;
-		private Action<PrepareWatcher, int> callback;
+
 		static PrepareWatcher()
 		{
 			unmanaged_callback = StaticCallback;
 		}
-		public PrepareWatcher(Action<PrepareWatcher, int> callback)
+		
+		public PrepareWatcher(Action<int> callback)
 		{
-			watcher = create_prepare_watcher(GCHandle.ToIntPtr(gc_handle), unmanaged_callback);
-			uv_prepare_init(this.watcher);
+			this._handle = Marshal.AllocHGlobal(Sizes.PrepareWatcherSize);
+			uv_prepare_init(this._handle);
+			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
+			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
+			handle.data = GCHandle.ToIntPtr(this.me);
 			this.callback = callback;
 		}
 		private static void StaticCallback(IntPtr watcher, int status)
 		{
-			var handle = GCHandle.FromIntPtr(watcher);
-			var watcher_instance = (PrepareWatcher)handle.Target;
-			watcher_instance.callback(watcher_instance, status);
+			var handle = (uv_handle_t)Marshal.PtrToStructure(watcher, typeof(uv_handle_t));
+			var instance = GCHandle.FromIntPtr(handle.data);
+			var watcher_instance = (PrepareWatcher)instance.Target;
+			watcher_instance.callback(status);
 		}
 		public void Start()
 		{
-			manos_prepare_start(this.watcher);
+			uv_prepare_start(this._handle, unmanaged_callback);
 		}
 		public void Stop()
 		{
-			uv_prepare_stop(this.watcher);
+			uv_prepare_stop(this._handle);
 		}
 	}
 }

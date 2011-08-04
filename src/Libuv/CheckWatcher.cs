@@ -5,39 +5,42 @@ namespace Libuv {
 	public class CheckWatcher : Watcher {
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void uv_check_cb(IntPtr socket, int status);
-		[DllImport("uvwrap")]
-		internal static extern IntPtr create_check_watcher(IntPtr myself, uv_check_cb cb);
-		[DllImport("uvwrap")]
+		[DllImport("uv")]
 		internal static extern int uv_check_init(IntPtr check);
-		[DllImport("uvwrap")]
-		internal static extern int manos_check_start(IntPtr check);
-		[DllImport("uvwrap")]
+		[DllImport("uv")]
+		internal static extern int uv_check_start(IntPtr check, uv_check_cb cb);
+		[DllImport("uv")]
 		internal static extern int uv_check_stop(IntPtr check);
+
 		private static uv_check_cb unmanaged_callback;
-		private Action<CheckWatcher, int> callback;
+
 		static CheckWatcher()
 		{
 			unmanaged_callback = StaticCallback;
 		}
-		public CheckWatcher(Action<CheckWatcher, int> callback)
+		public CheckWatcher(Action<int> callback)
 		{
-			watcher = create_check_watcher(GCHandle.ToIntPtr(gc_handle), unmanaged_callback);
-			uv_check_init(this.watcher);
+			this._handle = Marshal.AllocHGlobal(Sizes.CheckWatcherSize);
+			uv_check_init(this._handle);
+			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
+			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
+			handle.data = GCHandle.ToIntPtr(this.me);
 			this.callback = callback;
 		}
 		private static void StaticCallback(IntPtr watcher, int status)
 		{
-			var handle = GCHandle.FromIntPtr(watcher);
-			var watcher_instance = (CheckWatcher)handle.Target;
-			watcher_instance.callback(watcher_instance, status);
+			var handle = (uv_handle_t)Marshal.PtrToStructure(watcher, typeof(uv_handle_t));
+			var instance = GCHandle.FromIntPtr(handle.data);
+			var watcher_instance = (CheckWatcher)instance.Target;
+			watcher_instance.callback(status);
 		}
 		public void Start()
 		{
-			manos_check_start(this.watcher);
+			uv_check_start(this._handle, unmanaged_callback);
 		}
 		public void Stop()
 		{
-			uv_check_stop(this.watcher);
+			uv_check_stop(this._handle);
 		}
 	}
 }

@@ -3,13 +3,12 @@ using System;
 
 namespace Libuv {
 	public abstract class Watcher : IDisposable {
-		[DllImport("uvwrap")]
-		internal static extern void destroy_watcher(IntPtr watcher);
-		internal IntPtr watcher;
-		internal GCHandle gc_handle;
+		internal Action<int> callback;
+		internal IntPtr _handle;
+		internal GCHandle me;
+
 		internal Watcher()
 		{
-			gc_handle = GCHandle.Alloc(this);
 		}
 		~Watcher()
 		{
@@ -17,8 +16,8 @@ namespace Libuv {
 		}
 		private void Cleanup()
 		{
-			gc_handle.Free();
-			destroy_watcher(this.watcher);
+			me.Free();
+			Marshal.FreeHGlobal(this._handle);
 		}
 		public void Dispose()
 		{
