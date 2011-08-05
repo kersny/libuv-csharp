@@ -19,7 +19,7 @@ namespace Libuv {
 			unmanaged_callback = StaticCallback;
 		}
 		
-		public PrepareWatcher(Action<int> callback)
+		public PrepareWatcher(Action callback)
 		{
 			this._handle = Marshal.AllocHGlobal(Sizes.PrepareWatcherSize);
 			uv_prepare_init(this._handle);
@@ -30,10 +30,11 @@ namespace Libuv {
 		}
 		private static void StaticCallback(IntPtr watcher, int status)
 		{
+			//do something with status here maybe
 			var handle = (uv_handle_t)Marshal.PtrToStructure(watcher, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var watcher_instance = (PrepareWatcher)instance.Target;
-			watcher_instance.callback(status);
+			watcher_instance.callback();
 		}
 		public void Start()
 		{

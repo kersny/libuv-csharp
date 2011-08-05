@@ -33,7 +33,7 @@ deps/libuv/uv.a:
 
 build/libuv.%: deps/libuv/uv.a
 	ar -x deps/libuv/uv.a
-	$(CC) $($(STATIC_LIBRARY)) -m32 -o build/libuvwrap.$(STATIC_LIBRARY) *.o
+	$(CC) $($(STATIC_LIBRARY)) -m32 -o build/libuv.$(STATIC_LIBRARY) *.o
 	rm -rf __.SYMDEF\ SORTED *.o
 
 clean:

@@ -34,11 +34,11 @@ namespace Libuv {
 				uv_timer_set_repeat(this._handle, repeat.TotalMilliseconds);
 			}
 		}
-		public TimerWatcher(TimeSpan repeat, Action<int> callback)
+		public TimerWatcher(TimeSpan repeat, Action callback)
 			: this (TimeSpan.Zero, repeat, callback)
 		{
 		}
-		public TimerWatcher(TimeSpan after, TimeSpan repeat, Action<int> callback) : base()
+		public TimerWatcher(TimeSpan after, TimeSpan repeat, Action callback) : base()
 		{
 			this.repeat = repeat;
 			this.delay = after;
@@ -55,7 +55,7 @@ namespace Libuv {
 			var handle = (uv_handle_t)Marshal.PtrToStructure(watcher, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var watcher_instance = (TimerWatcher)instance.Target;
-			watcher_instance.callback(status);
+			watcher_instance.callback();
 		}
 		public void Start()
 		{

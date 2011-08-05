@@ -18,7 +18,7 @@ namespace Libuv {
 		{
 			unmanaged_callback = StaticCallback;
 		}
-		public IdleWatcher(Action<int> callback)
+		public IdleWatcher(Action callback)
 		{
 			this._handle = Marshal.AllocHGlobal(Sizes.IdleWatcherSize);
 			uv_idle_init(this._handle);
@@ -32,7 +32,7 @@ namespace Libuv {
 			var handle = (uv_handle_t)Marshal.PtrToStructure(watcher, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var watcher_instance = (IdleWatcher)instance.Target;
-			watcher_instance.callback(status);
+			watcher_instance.callback();
 		}
 		public void Start()
 		{

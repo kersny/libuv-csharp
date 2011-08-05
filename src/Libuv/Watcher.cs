@@ -3,7 +3,7 @@ using System;
 
 namespace Libuv {
 	public abstract class Watcher : IDisposable {
-		internal Action<int> callback;
+		internal Action callback;
 		internal IntPtr _handle;
 		internal GCHandle me;
 
