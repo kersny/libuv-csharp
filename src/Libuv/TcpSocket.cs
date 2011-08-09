@@ -18,8 +18,6 @@ namespace Libuv {
 				if ((int)buf.data != 0)
 					Marshal.FreeHGlobal(buf.data);
 				IntPtr shutdown = Marshal.AllocHGlobal(Sizes.ShutdownTSize);
-				uv_req_t tmp = (uv_req_t)Marshal.PtrToStructure(shutdown, typeof(uv_req_t));
-				tmp.data = stream;
 				uv_shutdown(shutdown, stream, after_shutdown);
 				return;
 			}
@@ -51,8 +49,8 @@ namespace Libuv {
 		{
 			// It'd be very difficult to get handle out of req
 			// So we'll store it in data & cast to uv_req_t
-			uv_req_t tmp = (uv_req_t)Marshal.PtrToStructure(shutdown, typeof(uv_req_t));
-			uv_close(tmp.data, on_close);
+			uv_shutdown_t tmp = (uv_shutdown_t)Marshal.PtrToStructure(shutdown, typeof(uv_shutdown_t));
+			uv_close(tmp.handle, on_close);
 			Marshal.FreeHGlobal(shutdown);
 		}
 		static void on_close(IntPtr socket)
@@ -67,10 +65,8 @@ namespace Libuv {
 		static void after_write(IntPtr write_req, int status)
 		{
 			var req = (uv_req_t)Marshal.PtrToStructure(write_req, typeof(uv_req_t));
-			Console.WriteLine(req.type);
-			Console.WriteLine(req.data);
-			var handle = GCHandle.FromIntPtr(req.data);
-			handle.Free();
+			//var handle = GCHandle.FromIntPtr(req.data);
+			//handle.Free();
 			Marshal.FreeHGlobal(write_req);
 		}
 		private IntPtr _handle;
@@ -97,21 +93,24 @@ namespace Libuv {
 		}
 		public TcpSocket(IntPtr ServerHandle)
 		{
+			this._handle = Marshal.AllocHGlobal(Sizes.TcpTSize);
+			uv_tcp_init(this._handle);
 			uv_accept(ServerHandle, this._handle);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
 			handle.data = GCHandle.ToIntPtr(this.me);
+			Marshal.StructureToPtr(handle, this._handle, true);
 			uv_read_start(this._handle, alloc_cb, unmanaged_read_cb);
 		}
 		public void Write(byte[] data, int length)
 		{
 			IntPtr write_request = Marshal.AllocHGlobal(68);
 			var dataptrhandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			// This is not being freed, which needs to be fixed
 			IntPtr dat = dataptrhandle.AddrOfPinnedObject();
 			uv_buf_t[] buf = new uv_buf_t[1];
 			buf[0].data = dat;
 			buf[0].len = (IntPtr)length;
-			Console.WriteLine(dat);
 			var req = (uv_req_t)Marshal.PtrToStructure(write_request, typeof(uv_req_t));
 			req.data = dat;
 			Marshal.StructureToPtr(req, write_request, true);

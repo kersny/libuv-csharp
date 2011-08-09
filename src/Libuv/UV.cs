@@ -17,6 +17,12 @@ namespace Libuv {
 		public IntPtr cb;
 		public IntPtr handle;
 	}
+	public struct uv_shutdown_t {
+		public uv_req_type type;
+		public IntPtr data;
+		public IntPtr handle;
+		public IntPtr cb;
+	}
 	public struct uv_err_t
 	{
 		public uv_err_code code;
