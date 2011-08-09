@@ -104,7 +104,7 @@ namespace Libuv {
 		}
 		public void Write(byte[] data, int length)
 		{
-			IntPtr write_request = Marshal.AllocHGlobal(68);
+			IntPtr write_request = Marshal.AllocHGlobal(Sizes.WriteTSize);
 			var dataptrhandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			// This is not being freed, which needs to be fixed
 			IntPtr dat = dataptrhandle.AddrOfPinnedObject();

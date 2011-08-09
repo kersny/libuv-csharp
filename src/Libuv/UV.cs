@@ -110,6 +110,7 @@ namespace Libuv {
 		public static readonly int TcpTSize = 152;
 		public static readonly int ShutdownTSize = 16;
 		public static readonly int ConnectTSize = 24;
+		public static readonly int WriteTSize = 68;
 	}
 	#if __MonoCS__
 	public struct uv_buf_t
