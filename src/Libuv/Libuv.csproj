@@ -40,7 +40,6 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TcpEntity.cs" />
     <Compile Include="TcpSocket.cs" />
     <Compile Include="TcpServer.cs" />
     <Compile Include="Watcher.cs" />

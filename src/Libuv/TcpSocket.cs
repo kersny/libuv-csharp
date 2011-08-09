@@ -37,10 +37,15 @@ namespace Libuv {
 		}
 		static void unmanaged_connect_cb(IntPtr connection, int status)
 		{
-			var handle = (uv_handle_t)Marshal.PtrToStructure(connection, typeof(uv_handle_t));
+			if (status != 0) {
+				throw new Exception(uv_strerror(uv_last_error()));
+			}
+			var tmp = (uv_connect_t)Marshal.PtrToStructure(connection, typeof(uv_connect_t));
+			var handle = (uv_handle_t)Marshal.PtrToStructure(tmp.handle, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var watcher_instance = (TcpSocket)instance.Target;
-			uv_read_start(watcher_instance._handle, alloc_cb, unmanaged_read_cb);
+			watcher_instance.HandleConnect();
+			uv_read_start(tmp.handle, alloc_cb, unmanaged_read_cb);
 		}
 		static void after_shutdown(IntPtr shutdown, int status)
 		{
@@ -62,12 +67,15 @@ namespace Libuv {
 		static void after_write(IntPtr write_req, int status)
 		{
 			var req = (uv_req_t)Marshal.PtrToStructure(write_req, typeof(uv_req_t));
+			Console.WriteLine(req.type);
+			Console.WriteLine(req.data);
 			var handle = GCHandle.FromIntPtr(req.data);
 			handle.Free();
 			Marshal.FreeHGlobal(write_req);
 		}
 		private IntPtr _handle;
 		public event Action<byte[]> OnData;
+		public event Action OnConnect;
 		private GCHandle me;
 		private IntPtr connection;
 		public TcpSocket()
@@ -75,16 +83,17 @@ namespace Libuv {
 			this._handle = Marshal.AllocHGlobal(Sizes.TcpTSize);
 			uv_tcp_init(this._handle);		
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
-			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
+			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
-			this.connection = Marshal.AllocHGlobal(Sizes.TcpTSize);
-			var connhandle = (uv_handle_t)Marshal.PtrToStructure(this.connection, typeof(uv_handle_t));
-			connhandle.data = handle.data;
+			Marshal.StructureToPtr(handle, this._handle, true);
+			this.connection = Marshal.AllocHGlobal(Sizes.ConnectTSize);
+			//can't attach anything to connect_t, it would get nulled
 		}
 		public void Connect(IPEndPoint endpoint, Action OnConnect)
 		{
 			var info = uv_ip4_addr(endpoint.Address.ToString(), endpoint.Port);
 			uv_tcp_connect(this.connection, this._handle, info, unmanaged_connect_cb);
+			this.OnConnect += OnConnect;
 		}
 		public TcpSocket(IntPtr ServerHandle)
 		{
@@ -102,9 +111,18 @@ namespace Libuv {
 			uv_buf_t[] buf = new uv_buf_t[1];
 			buf[0].data = dat;
 			buf[0].len = (IntPtr)length;
+			Console.WriteLine(dat);
 			var req = (uv_req_t)Marshal.PtrToStructure(write_request, typeof(uv_req_t));
 			req.data = dat;
+			Marshal.StructureToPtr(req, write_request, true);
 			uv_write(write_request, this._handle, buf, 1, after_write);
+		}
+		private void HandleConnect()
+		{
+			if (OnConnect != null)
+			{
+				OnConnect();
+			}
 		}
 		private void HandleRead(byte[] data, int nread)
 		{
@@ -141,7 +159,11 @@ namespace Libuv {
 		internal static extern int uv_close(IntPtr handle, uv_close_cb cb);
 		[DllImport ("uv")]
 		internal static extern int uv_tcp_connect(IntPtr connect, IntPtr tcp_handle, sockaddr_in address, uv_connect_cb cb);
-		[DllImport("uv")]
+		[DllImport ("uv")]
 		internal static extern sockaddr_in uv_ip4_addr(string ip, int port);
+		[DllImport ("uv")]
+		public static extern uv_err_t uv_last_error();
+		[DllImport ("uv")]
+		public static extern string uv_strerror(uv_err_t err);
 	}
 }

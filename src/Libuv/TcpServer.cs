@@ -11,7 +11,7 @@ namespace Libuv {
 		[DllImport("uv")]
 		internal static extern int uv_tcp_bind(IntPtr prepare, sockaddr_in address);
 		[DllImport("uv")]
-		internal static extern int uv_tcp_listen(IntPtr stream, int backlog, uv_connection_cb cb);
+		internal static extern int uv_listen(IntPtr stream, int backlog, uv_connection_cb cb);
 		[DllImport("uv")]
 		internal static extern sockaddr_in uv_ip4_addr(string ip, int port);
 
@@ -34,12 +34,13 @@ namespace Libuv {
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
 			handle.data = GCHandle.ToIntPtr(this.me);
+			Marshal.StructureToPtr(handle, this._handle, true);
 		}
 		public void Listen(IPEndPoint endpoint)
 		{
 			var info = uv_ip4_addr(endpoint.Address.ToString(), endpoint.Port);
 			uv_tcp_bind(this._handle, info);
-			uv_tcp_listen(this._handle, 128, unmanaged_callback);
+			uv_listen(this._handle, 128, unmanaged_callback);
 		}
 		public static void StaticCallback(IntPtr server_ptr, int status)
 		{

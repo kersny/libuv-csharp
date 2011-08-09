@@ -4,12 +4,18 @@ using System.Runtime.InteropServices;
 namespace Libuv {
 	public struct uv_handle_t {
 		public uv_handle_type type;
-		public uv_close_cb close_cb;
+		public IntPtr close_cb;
 		public IntPtr data;
 	}
 	public struct uv_req_t {
 		public uv_req_type type;
 		public IntPtr data;
+	}
+	public struct uv_connect_t {
+		public uv_req_type type;
+		public IntPtr data;
+		public IntPtr cb;
+		public IntPtr handle;
 	}
 	public struct uv_err_t
 	{
@@ -18,6 +24,8 @@ namespace Libuv {
 	}
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void uv_close_cb(IntPtr handle);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_connect_cb(IntPtr conn, int status);
 	public enum uv_err_code
 	{
 		UV_UNKNOWN = -1,

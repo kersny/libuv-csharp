@@ -48,6 +48,7 @@ namespace Libuv {
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
 			handle.data = GCHandle.ToIntPtr(this.me);
+			Marshal.StructureToPtr(handle, this._handle, true);
 			this.callback = callback;
 		}
 		private static void StaticCallback(IntPtr watcher, int status)

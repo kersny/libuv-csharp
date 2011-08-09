@@ -21,8 +21,8 @@ namespace Libuv {
 		}
 		public void Dispose()
 		{
-			Cleanup();
-			GC.SuppressFinalize(this);
+		//	Cleanup();
+		//	GC.SuppressFinalize(this);
 		}
 	}
 }
