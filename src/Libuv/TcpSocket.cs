@@ -8,7 +8,11 @@ namespace Libuv {
 		{
 			uv_buf_t buf;
 			buf.data = Marshal.AllocHGlobal(size);
+			#if __MonoCS__
 			buf.len =  size;
+			#else
+			buf.len = (ulong)size;
+			#endif
 			return buf;
 		}
 		static void unmanaged_read_cb(IntPtr stream, IntPtr nread, uv_buf_t buf)
@@ -110,7 +114,11 @@ namespace Libuv {
 			IntPtr dat = dataptrhandle.AddrOfPinnedObject();
 			uv_buf_t[] buf = new uv_buf_t[1];
 			buf[0].data = dat;
+			#if __MonoCS__
 			buf[0].len = (IntPtr)length;
+			#else
+			buf[0].len = (ulong)length;
+			#endif
 			var req = (uv_req_t)Marshal.PtrToStructure(write_request, typeof(uv_req_t));
 			req.data = dat;
 			Marshal.StructureToPtr(req, write_request, true);
