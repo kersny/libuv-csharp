@@ -17,7 +17,7 @@ namespace Libuv.Tests {
 			uv_init();
 
 			var watch = new PrepareWatcher(() => {
-				Console.WriteLine("Prepare Watcher Called");
+				//Console.WriteLine("Prepare Watcher Called");
 			});
 			watch.Start();
 			var server = new TcpServer((socket) => {
@@ -47,24 +47,51 @@ namespace Libuv.Tests {
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
 				client.Write(message, message.Length);
 			});
+			var pipeserver = new PipeServer((socket) => {
+				clientcount++;
+				socket.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
+				if (clientcount > 5) {
+					socket.Close();
+				}
+				Console.WriteLine("Pipe Client Connected");
+				socket.OnData += (data) => {
+					Console.WriteLine("Pipe Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
+					socket.Write(data, data.Length);
+				};
+				//socket.OnClose += () => {
+				//	Console.WriteLine("Client Disconnected");
+				//};
+			});
+			pipeserver.Listen("libuv-csharp");
+			var pipeclient = new PipeSocket();
+			pipeclient.OnData += (data) => {
+				Console.WriteLine("Pipe Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
+				watch.Stop();
+				watch.Dispose();
+				pipeclient.Close();
+			};
+			pipeclient.Connect("libuv-csharp", () => {
+				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
+				pipeclient.Write(message, message.Length);
+			});
 			var watch2 = new PrepareWatcher(() => {
-				Console.WriteLine("Prepare Watcher 2 Called");
+				//Console.WriteLine("Prepare Watcher 2 Called");
 			});
 			watch2.Start();
 			var check = new CheckWatcher(() => {
-				Console.WriteLine("Check Watcher Called");
+				//Console.WriteLine("Check Watcher Called");
 			});
 			check.Start();
 			var idle = new IdleWatcher(() => {
-				Console.WriteLine("Idle Watcher Called");
+				//Console.WriteLine("Idle Watcher Called");
 			});
 			idle.Start();
 			var after = new TimerWatcher(new TimeSpan(0,0,5), new TimeSpan(1,0,0), () => {
-				Console.WriteLine("After 5 Seconds");
+				//Console.WriteLine("After 5 Seconds");
 			});
 			after.Start();
 			var every = new TimerWatcher(new TimeSpan(0,0,5), () => {
-				Console.WriteLine("Every 5 Seconds");
+				//Console.WriteLine("Every 5 Seconds");
 			//	after.Stop();
 			});
 			every.Start();

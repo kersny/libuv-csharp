@@ -40,6 +40,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PipeSocket.cs" />
+    <Compile Include="PipeServer.cs" />
     <Compile Include="TcpSocket.cs" />
     <Compile Include="TcpServer.cs" />
     <Compile Include="Watcher.cs" />
