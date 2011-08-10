@@ -3,15 +3,18 @@ using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Libuv {
+	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_handle_t {
 		public uv_handle_type type;
 		public IntPtr close_cb;
 		public IntPtr data;
 	}
+	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_req_t {
 		public uv_req_type type;
 		public IntPtr data;
 	}
+	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_connect_t {
 		public uv_req_type type;
 		public IntPtr data;
@@ -24,6 +27,7 @@ namespace Libuv {
 		public IntPtr cb;
 		public IntPtr handle;
 	}
+	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_shutdown_t {
 		public uv_req_type type;
 		public IntPtr data;
@@ -36,6 +40,7 @@ namespace Libuv {
 		public IntPtr handle;
 		public IntPtr cb;
 	}
+	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_err_t
 	{
 		public uv_err_code code;
@@ -122,6 +127,7 @@ namespace Libuv {
 		public static readonly int CheckWatcherSize = 64;
 		public static readonly int TimerWatcherSize = 80;
 		public static readonly int TcpTSize = 152;
+		public static readonly int PipeTSize = 156;
 		public static readonly int ShutdownTSize = 16;
 		public static readonly int ConnectTSize = 24;
 		public static readonly int WriteTSize = 68;
@@ -136,6 +142,7 @@ namespace Libuv {
 		public static readonly int WriteTSize = 52;
 		#endif
 	}
+	[StructLayout(LayoutKind.Sequential)]
 	#if __MonoCS__
 	public struct uv_buf_t
 	{
