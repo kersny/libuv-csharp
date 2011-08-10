@@ -7,7 +7,7 @@ namespace Libuv {
 		static uv_buf_t alloc_cb(IntPtr tcp, IntPtr size)
 		{
 			uv_buf_t buf;
-			buf.data = Marshal.AllocHGlobal(size);
+			buf.data = Marshal.AllocHGlobal((int)size);
 			#if __MonoCS__
 			buf.len =  size;
 			#else

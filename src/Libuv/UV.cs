@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Libuv {
@@ -14,12 +15,24 @@ namespace Libuv {
 	public struct uv_connect_t {
 		public uv_req_type type;
 		public IntPtr data;
+		#if !__MonoCS__
+		NativeOverlapped overlapped;
+		IntPtr queued_bytes;
+		uv_err_t error;
+		IntPtr next_req;
+		#endif
 		public IntPtr cb;
 		public IntPtr handle;
 	}
 	public struct uv_shutdown_t {
 		public uv_req_type type;
 		public IntPtr data;
+		#if !__MonoCS__
+		NativeOverlapped overlapped;
+		IntPtr queued_bytes;
+		uv_err_t error;
+		IntPtr next_req;
+		#endif
 		public IntPtr handle;
 		public IntPtr cb;
 	}
@@ -103,6 +116,7 @@ namespace Libuv {
 		UV_REQ_TYPE_PRIVATE
 	}
 	public static class Sizes {
+		#if __MonoCS__
 		public static readonly int PrepareWatcherSize = 64;
 		public static readonly int IdleWatcherSize = 64;
 		public static readonly int CheckWatcherSize = 64;
@@ -111,6 +125,16 @@ namespace Libuv {
 		public static readonly int ShutdownTSize = 16;
 		public static readonly int ConnectTSize = 24;
 		public static readonly int WriteTSize = 68;
+		#else
+		public static readonly int PrepareWatcherSize = 40;
+		public static readonly int IdleWatcherSize = 40;
+		public static readonly int CheckWatcherSize = 40;
+		public static readonly int TimerWatcherSize = 72;
+		public static readonly int TcpTSize = 436;
+		public static readonly int ShutdownTSize = 52;
+		public static readonly int ConnectTSize = 52;
+		public static readonly int WriteTSize = 52;
+		#endif
 	}
 	#if __MonoCS__
 	public struct uv_buf_t
