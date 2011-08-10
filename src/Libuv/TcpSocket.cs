@@ -101,7 +101,7 @@ namespace Libuv {
 			uv_tcp_init(this._handle);
 			uv_accept(ServerHandle, this._handle);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
-			this.me = GCHandle.Alloc(this, GCHandleType.Pinned);
+			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
 			Marshal.StructureToPtr(handle, this._handle, true);
 			uv_read_start(this._handle, alloc_cb, unmanaged_read_cb);
