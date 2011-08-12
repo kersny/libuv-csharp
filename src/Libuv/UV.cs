@@ -46,10 +46,6 @@ namespace Libuv {
 		public uv_err_code code;
 		int sys_errno_;
 	}
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void uv_close_cb(IntPtr handle);
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void uv_connect_cb(IntPtr conn, int status);
 	public enum uv_err_code
 	{
 		UV_UNKNOWN = -1,
@@ -180,4 +176,16 @@ namespace Libuv {
 		}
 		public in_addr sin_addr;
 	}
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_shutdown_cb(IntPtr req, int status);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate uv_buf_t uv_alloc_cb(IntPtr stream, IntPtr suggested_size);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_read_cb(IntPtr req, IntPtr nread, uv_buf_t buf);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_write_cb(IntPtr req, int status);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_connect_cb(IntPtr conn, int status);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_close_cb(IntPtr conn);
 }

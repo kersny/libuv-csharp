@@ -141,16 +141,6 @@ namespace Libuv {
 		{
 			uv_close(this._handle, on_close);
 		}
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_shutdown_cb(IntPtr req, int status);
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate uv_buf_t uv_alloc_cb(IntPtr stream, IntPtr suggested_size);
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_read_cb(IntPtr req, IntPtr nread, uv_buf_t buf);
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_write_cb(IntPtr req, int status);
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_connect_cb(IntPtr conn, int status);
 		[DllImport("uv")]
 		internal static extern int uv_pipe_init(IntPtr prepare);
 		[DllImport ("uv")]
