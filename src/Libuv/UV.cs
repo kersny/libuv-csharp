@@ -3,6 +3,16 @@ using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Libuv {
+	public static class Util {
+		public static void CheckError(int code)
+		{
+			if (code != 0) throw new Exception(uv_strerror(uv_last_error()));
+		}
+		[DllImport ("uv")]
+		public static extern uv_err_t uv_last_error();
+		[DllImport ("uv")]
+		public static extern string uv_strerror(uv_err_t err);
+	}
 	[StructLayout(LayoutKind.Sequential)]
 	public struct uv_handle_t {
 		public uv_handle_type type;
