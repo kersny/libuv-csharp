@@ -26,7 +26,7 @@ namespace Libuv {
 		{
 			this.callback = callback;
 			this._handle = Marshal.AllocHGlobal(Sizes.PipeT);
-			uv_pipe_init(this._handle);
+			Util.CheckError(uv_pipe_init(this._handle));
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
@@ -34,11 +34,12 @@ namespace Libuv {
 		}
 		public void Listen(string endpoint)
 		{
-			uv_pipe_bind(this._handle, endpoint);
-			uv_listen(this._handle, 128, unmanaged_callback);
+			Util.CheckError(uv_pipe_bind(this._handle, endpoint));
+			Util.CheckError(uv_listen(this._handle, 128, unmanaged_callback));
 		}
 		public static void StaticCallback(IntPtr server_ptr, int status)
 		{
+			Util.CheckError(status);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(server_ptr, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var server = (PipeServer)instance.Target;

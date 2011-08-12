@@ -42,6 +42,7 @@ namespace Libuv {
 		}
 		public static void StaticCallback(IntPtr server_ptr, int status)
 		{
+			Util.CheckError(status);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(server_ptr, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var server = (TcpServer)instance.Target;
