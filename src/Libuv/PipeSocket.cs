@@ -21,7 +21,7 @@ namespace Libuv {
 			if (size < 0) {
 				if ((int)buf.data != 0)
 					Marshal.FreeHGlobal(buf.data);
-				IntPtr shutdown = Marshal.AllocHGlobal(Sizes.ShutdownTSize);
+				IntPtr shutdown = Marshal.AllocHGlobal(Sizes.ShutdownT);
 				uv_shutdown(shutdown, stream, after_shutdown);
 				return;
 			}
@@ -80,13 +80,13 @@ namespace Libuv {
 		private IntPtr connection;
 		public PipeSocket()
 		{
-			this._handle = Marshal.AllocHGlobal(Sizes.PipeTSize);
+			this._handle = Marshal.AllocHGlobal(Sizes.PipeT);
 			uv_pipe_init(this._handle);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
 			Marshal.StructureToPtr(handle, this._handle, true);
-			this.connection = Marshal.AllocHGlobal(Sizes.ConnectTSize);
+			this.connection = Marshal.AllocHGlobal(Sizes.ConnectT);
 			//can't attach anything to connect_t, it would get nulled
 		}
 		public void Connect(string path, Action OnConnect)
@@ -96,7 +96,7 @@ namespace Libuv {
 		}
 		public PipeSocket(IntPtr ServerHandle)
 		{
-			this._handle = Marshal.AllocHGlobal(Sizes.PipeTSize);
+			this._handle = Marshal.AllocHGlobal(Sizes.PipeT);
 			uv_pipe_init(this._handle);
 			uv_accept(ServerHandle, this._handle);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
@@ -107,7 +107,7 @@ namespace Libuv {
 		}
 		public void Write(byte[] data, int length)
 		{
-			IntPtr write_request = Marshal.AllocHGlobal(Sizes.WriteTSize);
+			IntPtr write_request = Marshal.AllocHGlobal(Sizes.WriteT);
 			var dataptrhandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			// This is not being freed, which needs to be fixed
 			IntPtr dat = dataptrhandle.AddrOfPinnedObject();

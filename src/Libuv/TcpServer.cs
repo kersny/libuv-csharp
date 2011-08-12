@@ -4,8 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Libuv {
 	public class TcpServer {
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_connection_cb(IntPtr server, int status);
 		[DllImport("uv")]
 		internal static extern int uv_tcp_init(IntPtr prepare);
 		[DllImport("uv")]
@@ -29,8 +27,8 @@ namespace Libuv {
 		public TcpServer(Action<TcpSocket> callback)
 		{
 			this.callback = callback;
-			this._handle = Marshal.AllocHGlobal(Sizes.TcpTSize);
-			uv_tcp_init(this._handle);
+			this._handle = Marshal.AllocHGlobal(Sizes.TcpT);
+			Util.CheckError(uv_tcp_init(this._handle));
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
@@ -39,8 +37,8 @@ namespace Libuv {
 		public void Listen(IPEndPoint endpoint)
 		{
 			var info = uv_ip4_addr(endpoint.Address.ToString(), endpoint.Port);
-			uv_tcp_bind(this._handle, info);
-			uv_listen(this._handle, 128, unmanaged_callback);
+			Util.CheckError(uv_tcp_bind(this._handle, info));
+			Util.CheckError(uv_listen(this._handle, 128, unmanaged_callback));
 		}
 		public static void StaticCallback(IntPtr server_ptr, int status)
 		{

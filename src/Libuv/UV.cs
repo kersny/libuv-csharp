@@ -199,4 +199,6 @@ namespace Libuv {
 	public delegate void uv_connect_cb(IntPtr conn, int status);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void uv_close_cb(IntPtr conn);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void uv_connection_cb(IntPtr server, int status);
 }

@@ -22,14 +22,14 @@ namespace Libuv.Tests {
 			watch.Start();
 			var server = new TcpServer((socket) => {
 				clientcount++;
-				socket.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
+				socket.Stream.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
 				if (clientcount > 5) {
 					socket.Close();
 				}
 				Console.WriteLine("Client Connected");
-				socket.OnData += (data) => {
+				socket.Stream.OnRead += (data) => {
 					Console.WriteLine("Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
-					socket.Write(data, data.Length);
+					socket.Stream.Write(data, data.Length);
 				};
 				//socket.OnClose += () => {
 				//	Console.WriteLine("Client Disconnected");
@@ -37,26 +37,26 @@ namespace Libuv.Tests {
 			});
 			server.Listen(endpoint);
 			var client = new TcpSocket();
-			client.OnData += (data) => {
-				Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
-				watch.Stop();
-				watch.Dispose();
-				client.Close();
-			};
 			client.Connect(endpoint, () => {
+				client.Stream.OnRead += (data) => {
+					Console.WriteLine("Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
+					watch.Stop();
+					watch.Dispose();
+					client.Close();
+				};
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
-				client.Write(message, message.Length);
+				client.Stream.Write(message, message.Length);
 			});
 			var pipeserver = new PipeServer((socket) => {
 				clientcount++;
-				socket.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
+				socket.Stream.Write(System.Text.Encoding.ASCII.GetBytes(clientcount.ToString()), 1);
 				if (clientcount > 5) {
 					socket.Close();
 				}
 				Console.WriteLine("Pipe Client Connected");
-				socket.OnData += (data) => {
+				socket.Stream.OnData += (data) => {
 					Console.WriteLine("Pipe Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
-					socket.Write(data, data.Length);
+					socket.Stream.Write(data, data.Length);
 				};
 				//socket.OnClose += () => {
 				//	Console.WriteLine("Client Disconnected");
@@ -64,15 +64,15 @@ namespace Libuv.Tests {
 			});
 			pipeserver.Listen("libuv-csharp");
 			var pipeclient = new PipeSocket();
-			pipeclient.OnData += (data) => {
-				Console.WriteLine("Pipe Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
-				watch.Stop();
-				watch.Dispose();
-				pipeclient.Close();
-			};
 			pipeclient.Connect("libuv-csharp", () => {
+				pipeclient.Stream.OnData += (data) => {
+					Console.WriteLine("Pipe Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
+					watch.Stop();
+					watch.Dispose();
+					pipeclient.Close();
+				};
 				byte[] message = System.Text.Encoding.ASCII.GetBytes("Hello World\n");
-				pipeclient.Write(message, message.Length);
+				pipeclient.Stream.Write(message, message.Length);
 			});
 			var watch2 = new PrepareWatcher(() => {
 				//Console.WriteLine("Prepare Watcher 2 Called");

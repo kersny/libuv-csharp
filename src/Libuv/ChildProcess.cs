@@ -75,9 +75,9 @@ namespace Libuv {
 		uv_process_options_t options;
 		public ChildProcess()
 		{
-			IntPtr stdout = Marshal.AllocHGlobal(Sizes.PipeTSize);
+			IntPtr stdout = Marshal.AllocHGlobal(Sizes.PipeT);
 			uv_pipe_init(stdout);
-			IntPtr process = Marshal.AllocHGlobal(Sizes.ProcessTSize);
+			IntPtr process = Marshal.AllocHGlobal(Sizes.ProcessT);
 			var pwd = Directory.GetCurrentDirectory();
 			pwd = Path.Combine(pwd, "t");
 			options = new uv_process_options_t();

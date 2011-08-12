@@ -13,7 +13,7 @@ namespace Libuv {
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var socket_instance = (TcpSocket)instance.Target;
 			socket_instance.HandleConnect();
-			this.Stream = new Stream(socket_instance._handle);
+			socket_instance.Stream = new UVStream(socket_instance._handle);
 		}
 		static void on_close(IntPtr socket)
 		{
@@ -25,7 +25,6 @@ namespace Libuv {
 			Marshal.FreeHGlobal(socket);
 		}
 		private IntPtr _handle;
-		public event Action<byte[]> OnData;
 		public event Action OnConnect;
 		private GCHandle me;
 		private IntPtr connection;
@@ -55,7 +54,7 @@ namespace Libuv {
 			this.me = GCHandle.Alloc(this);
 			handle.data = GCHandle.ToIntPtr(this.me);
 			Marshal.StructureToPtr(handle, this._handle, true);
-			this.Stream = new Stream(this._handle);
+			this.Stream = new UVStream(this._handle);
 		}
 		private void HandleConnect()
 		{

@@ -4,8 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Libuv {
 	public class PipeServer {
-		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void uv_connection_cb(IntPtr server, int status);
 		[DllImport("uv")]
 		internal static extern int uv_pipe_init(IntPtr prepare);
 		[DllImport("uv")]
@@ -27,7 +25,7 @@ namespace Libuv {
 		public PipeServer(Action<PipeSocket> callback)
 		{
 			this.callback = callback;
-			this._handle = Marshal.AllocHGlobal(Sizes.PipeTSize);
+			this._handle = Marshal.AllocHGlobal(Sizes.PipeT);
 			uv_pipe_init(this._handle);
 			var handle = (uv_handle_t)Marshal.PtrToStructure(this._handle, typeof(uv_handle_t));
 			this.me = GCHandle.Alloc(this);
