@@ -118,25 +118,25 @@ namespace Libuv {
 	}
 	public static class Sizes {
 		#if __MonoCS__
-		public static readonly int PrepareWatcherSize = 64;
-		public static readonly int IdleWatcherSize = 64;
-		public static readonly int CheckWatcherSize = 64;
-		public static readonly int TimerWatcherSize = 80;
-		public static readonly int TcpTSize = 152;
-		public static readonly int PipeTSize = 156;
-		public static readonly int ShutdownTSize = 16;
-		public static readonly int ConnectTSize = 24;
-		public static readonly int WriteTSize = 68;
-		public static readonly int ProcessTSize = 88;
+		public static readonly int PrepareWatcher = 64;
+		public static readonly int IdleWatcher = 64;
+		public static readonly int CheckWatcher = 64;
+		public static readonly int TimerWatcher = 80;
+		public static readonly int TcpT = 152;
+		public static readonly int PipeT = 156;
+		public static readonly int ShutdownT = 16;
+		public static readonly int ConnectT = 24;
+		public static readonly int WriteT = 68;
+		public static readonly int ProcessT = 88;
 		#else
-		public static readonly int PrepareWatcherSize = 40;
-		public static readonly int IdleWatcherSize = 40;
-		public static readonly int CheckWatcherSize = 40;
-		public static readonly int TimerWatcherSize = 72;
-		public static readonly int TcpTSize = 436;
-		public static readonly int ShutdownTSize = 52;
-		public static readonly int ConnectTSize = 52;
-		public static readonly int WriteTSize = 52;
+		public static readonly int PrepareWatcher = 40;
+		public static readonly int IdleWatcher = 40;
+		public static readonly int CheckWatcher = 40;
+		public static readonly int TimerWatcher = 72;
+		public static readonly int TcpT = 436;
+		public static readonly int ShutdownT = 52;
+		public static readonly int ConnectT = 52;
+		public static readonly int WriteT = 52;
 		#endif
 	}
 	[StructLayout(LayoutKind.Sequential)]
