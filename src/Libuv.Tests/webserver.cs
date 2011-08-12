@@ -95,6 +95,7 @@ namespace Libuv.Tests {
 			//	after.Stop();
 			});
 			every.Start();
+			var cp = new ChildProcess();
 			uv_run();
 		}
 	}

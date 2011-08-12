@@ -127,6 +127,7 @@ namespace Libuv {
 		public static readonly int ShutdownTSize = 16;
 		public static readonly int ConnectTSize = 24;
 		public static readonly int WriteTSize = 68;
+		public static readonly int ProcessTSize = 88;
 		#else
 		public static readonly int PrepareWatcherSize = 40;
 		public static readonly int IdleWatcherSize = 40;
