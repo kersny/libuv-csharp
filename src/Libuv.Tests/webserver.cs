@@ -13,7 +13,7 @@ namespace Libuv.Tests {
 		static int clientcount = 0;
 		static void Main ()
 		{
-			var endpoint = new IPEndPoint(new IPAddress(new byte[] { 127, 0, 0, 1}), 8080);
+			var endpoint = new IPEndPoint(new IPAddress(new byte[] { 127, 0, 0, 1}), 8081);
 			uv_init();
 
 			var watch = new PrepareWatcher(() => {
@@ -54,7 +54,7 @@ namespace Libuv.Tests {
 					socket.Close();
 				}
 				Console.WriteLine("Pipe Client Connected");
-				socket.Stream.OnData += (data) => {
+				socket.Stream.OnRead += (data) => {
 					Console.WriteLine("Pipe Data Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
 					socket.Stream.Write(data, data.Length);
 				};
@@ -65,7 +65,7 @@ namespace Libuv.Tests {
 			pipeserver.Listen("libuv-csharp");
 			var pipeclient = new PipeSocket();
 			pipeclient.Connect("libuv-csharp", () => {
-				pipeclient.Stream.OnData += (data) => {
+				pipeclient.Stream.OnRead += (data) => {
 					Console.WriteLine("Pipe Client Recieved: {0}", System.Text.Encoding.ASCII.GetString(data, 0, data.Length));
 					watch.Stop();
 					watch.Dispose();
@@ -95,7 +95,8 @@ namespace Libuv.Tests {
 			//	after.Stop();
 			});
 			every.Start();
-			var cp = new ChildProcess();
+			var cp = new ChildProcess("ls");
+			cp.Spawn();
 			uv_run();
 		}
 	}

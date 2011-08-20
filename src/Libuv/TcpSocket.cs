@@ -12,17 +12,20 @@ namespace Libuv {
 			var handle = (uv_handle_t)Marshal.PtrToStructure(tmp.handle, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var socket_instance = (TcpSocket)instance.Target;
-			socket_instance.HandleConnect();
 			socket_instance.Stream = new UVStream(socket_instance._handle);
+			socket_instance.Stream.ReadStart();
+			socket_instance.HandleConnect();
 		}
 		static void on_close(IntPtr socket)
 		{
+			/*
 			var handle = (uv_handle_t)Marshal.PtrToStructure(socket, typeof(uv_handle_t));
 			var instance = GCHandle.FromIntPtr(handle.data);
 			var watcher_instance = (TcpSocket)instance.Target;
 			//dont think this is what should happen here
 			watcher_instance.me.Free();
 			Marshal.FreeHGlobal(socket);
+			*/
 		}
 		private IntPtr _handle;
 		public event Action OnConnect;

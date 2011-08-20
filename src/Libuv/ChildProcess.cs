@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.IO;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Libuv {
@@ -11,7 +12,7 @@ namespace Libuv {
 		public uv_exit_cb exit_cb;
 		public string file;
 		public IntPtr[] args;
-		public string[] env;
+		public IntPtr[] env;
 		public string cwd;
 		public int windows_verbatim_arguments;
 
@@ -24,46 +25,10 @@ namespace Libuv {
 		public static extern int uv_spawn(IntPtr process, uv_process_options_t options);
 		[DllImport ("uv")]
 		public static extern int uv_process_kill(IntPtr process, int signum);
-		[DllImport("uv")]
-		internal static extern int uv_pipe_init(IntPtr prepare);
+		[DllImport ("uv")]
+		public static extern int uv_pipe_init(IntPtr pipe);
 		[DllImport ("uv")]
 		public static extern int uv_close(IntPtr process, uv_close_cb cb);
-		[DllImport ("uv")]
-		internal static extern int uv_read_start(IntPtr stream, uv_alloc_cb alloc_cb, uv_read_cb read);
-		static uv_buf_t static_alloc(IntPtr pipe, IntPtr size)
-		{
-			uv_buf_t buf;
-			buf.data = Marshal.AllocHGlobal((int)size);
-			#if __MonoCS__
-			buf.len =  size;
-			#else
-			buf.len = (ulong)size;
-			#endif
-			return buf;
-		}
-		static void static_read(IntPtr stream, IntPtr nread, uv_buf_t buf)
-		{
-			int size = (int)nread;
-			if (size < 0) {
-				if ((int)buf.data != 0)
-					Marshal.FreeHGlobal(buf.data);
-				//IntPtr shutdown = Marshal.AllocHGlobal(Sizes.ShutdownTSize);
-				//uv_shutdown(shutdown, stream, after_shutdown);
-				return;
-			}
-			if (size == 0) {
-				Marshal.FreeHGlobal(buf.data);
-				return;
-			}
-			byte[] data = new byte[size];
-			Marshal.Copy(buf.data, data, 0, size);
-			Console.WriteLine("FROM PROC: {0}", System.Text.Encoding.ASCII.GetString(data));
-			//var handle = (uv_handle_t)Marshal.PtrToStructure(stream, typeof(uv_handle_t));
-			//var instance = GCHandle.FromIntPtr(handle.data);
-			//var watcher_instance = (PipeSocket)instance.Target;
-			//watcher_instance.HandleRead(data, size);
-			Marshal.FreeHGlobal(buf.data);
-		}
 		static void static_exit(IntPtr handle, int exit_status, int term_signal)
 		{
 			uv_close(handle, static_close);
@@ -72,25 +37,56 @@ namespace Libuv {
 		{
 			Marshal.FreeHGlobal(handle);
 		}
-		uv_process_options_t options;
-		public ChildProcess()
+		public string File { get; set; }
+		public string CurrentWorkingDirectory { get; set; }
+		public List<string> Environment { get; private set; }
+		public List<string> Arguments { get; private set; }
+		private IntPtr _handle;
+		public UVStream StdOut;
+		public UVStream StdErr;
+		private IntPtr _stdout;
+		private IntPtr _stderr;
+		//public event Action<string, string> OnExit;
+		//private void HandleExit(string stdout, string stderr);
+
+		public ChildProcess(string command)
 		{
-			IntPtr stdout = Marshal.AllocHGlobal(Sizes.PipeT);
-			uv_pipe_init(stdout);
-			IntPtr process = Marshal.AllocHGlobal(Sizes.ProcessT);
-			var pwd = Directory.GetCurrentDirectory();
-			pwd = Path.Combine(pwd, "t");
-			options = new uv_process_options_t();
+			this.File = command;
+			this.CurrentWorkingDirectory = Directory.GetCurrentDirectory();
+			this._stdout = Marshal.AllocHGlobal(Sizes.PipeT);
+			uv_pipe_init(_stdout);
+			this.StdOut = new UVStream(_stdout);
+			this._stderr = Marshal.AllocHGlobal(Sizes.PipeT);
+			uv_pipe_init(_stdout);
+			this.StdOut = new UVStream(_stdout);
+			this._handle  = Marshal.AllocHGlobal(Sizes.ProcessT);
+		}
+		public void Spawn()
+		{
+			var options = new uv_process_options_t();
 			options.exit_cb = static_exit;
-			options.file = pwd;
-			var args = new IntPtr[3];
-			args[0] = Marshal.StringToHGlobalAuto(pwd);
-			args[1] = Marshal.StringToHGlobalAuto("t");
-			args[2] = IntPtr.Zero;
+			options.file = this.File;
+			var args = new IntPtr[Arguments.Count + 3];
+			args[0] = Marshal.StringToHGlobalAuto(this.CurrentWorkingDirectory);
+			args[1] = Marshal.StringToHGlobalAuto(this.File);
+			args[args.Length - 1] = IntPtr.Zero;
+			for (int i = 0; i < Arguments.Count; i++)
+			{
+				args[i + 2] = Marshal.StringToHGlobalAuto(Arguments[i]);
+			}
 			options.args = args;
-			options.stdout_stream = stdout;
-			uv_spawn(process, options);
-			uv_read_start(stdout, static_alloc, static_read);
+			var env = new IntPtr[Environment.Count + 1];
+			env[Environment.Count - 1] = IntPtr.Zero;
+			for (int i = 0; i < Environment.Count; i++)
+			{
+				env[i] = Marshal.StringToHGlobalAuto(Environment[i]);
+			}
+			options.env = env;
+			options.stdout_stream = _stdout;
+			options.stderr_stream = _stderr;
+			Util.CheckError(uv_spawn(_handle, options));
+			StdOut.ReadStart();
+			StdErr.ReadStart();
 		}
 	}
 }
