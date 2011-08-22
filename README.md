@@ -55,8 +55,10 @@ Somewhere else:
 TODO
 ----
 
-* Implement all of the api
-* Get rid of memory leaks
+* Test for Memory Leaks
+* Fix Child Processes
+* Proper test suite to make bumping UV Version easier
+* Auto-generated struct sizes for all platforms
 
 [0]: https://www.github.com/joyent/libuv
 [1]: https://www.github.com/jacksonh/manos
